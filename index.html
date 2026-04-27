@@ -3,118 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Connect Wallet</title>
+    <title>DApp Portal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
     <style>
-        :root { --primary: #007aff; --bg: #000000; --card: #1c1c1e; }
+        :root { --primary: #007aff; --success: #34c759; --bg: #000; --card: #1c1c1e; }
         body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
-        /* 页面主体按钮 */
-        .main-btn { padding: 18px 40px; background: var(--primary); border: none; border-radius: 16px; color: #fff; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
-        .main-btn:active { transform: scale(0.95); }
+        .container { text-align: center; width: 100%; }
+        
+        /* 不同的状态显示 */
+        #ui-external { display: none; } /* Safari 状态 */
+        #ui-internal { display: none; } /* 钱包内部状态 */
 
-        /* 弹窗遮罩 */
+        .btn-main { padding: 18px 40px; background: var(--primary); border: none; border-radius: 16px; color: #fff; font-size: 18px; font-weight: 600; cursor: pointer; }
+        
+        .status-card { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #333; display: inline-block; width: 80%; max-width: 320px; }
+        .address-box { font-family: monospace; font-size: 13px; color: var(--success); margin-top: 10px; word-break: break-all; }
+
+        /* 弹窗样式 */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .overlay.active { display: flex; }
-
-        /* 弹窗主体 */
-        .modal { background: var(--card); width: 85%; max-width: 350px; border-radius: 24px; padding: 24px; border: 1px solid #333; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; text-align: center; }
-
-        /* 钱包列表项 */
-        .wallet-option { display: flex; align-items: center; padding: 16px; margin-bottom: 12px; background: #2c2c2e; border-radius: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .wallet-option:active { background: #3a3a3c; transform: scale(0.98); }
-        .wallet-logo { width: 40px; height: 40px; border-radius: 10px; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; }
-        .wallet-name { font-size: 16px; font-weight: 600; }
-
-        .cancel-btn { text-align: center; margin-top: 15px; color: #ff453a; font-size: 15px; cursor: pointer; padding: 10px; }
+        .modal { background: var(--card); width: 85%; max-width: 350px; border-radius: 24px; padding: 24px; border: 1px solid #333; }
+        .wallet-option { display: flex; align-items: center; padding: 16px; margin-bottom: 12px; background: #2c2c2e; border-radius: 16px; cursor: pointer; }
+        .wallet-logo { width: 40px; height: 40px; border-radius: 10px; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; background: #444; }
     </style>
 </head>
 <body>
 
-    <button class="main-btn" onclick="startConnect()">Connect Wallet</button>
+    <div class="container">
+        <div id="ui-external">
+            <button class="btn-main" onclick="startConnect()">Connect Wallet</button>
+        </div>
+
+        <div id="ui-internal">
+            <div class="status-card">
+                <div style="font-size: 18px; font-weight: bold;">✅ Wallet Connected</div>
+                <div id="addr" class="address-box">Detecting Address...</div>
+            </div>
+        </div>
+    </div>
 
     <div class="overlay" id="walletModal">
         <div class="modal">
-            <div class="modal-title">Select Wallet</div>
-            
-            <div class="wallet-option" onclick="goToWallet('tp')">
-                <div class="wallet-logo" style="background:#2161ff">TP</div>
-                <div class="wallet-name">TokenPocket</div>
-            </div>
-
-            <div class="wallet-option" onclick="goToWallet('im')">
-                <div class="wallet-logo" style="background:#098de6">IM</div>
-                <div class="wallet-name">imToken</div>
-            </div>
-
-            <div class="wallet-option" onclick="goToWallet('trust')">
-                <div class="wallet-logo" style="background:#3375bb">TW</div>
-                <div class="wallet-name">Trust Wallet</div>
-            </div>
-
-            <div class="wallet-option" onclick="goToWallet('mm')">
-                <div class="wallet-logo" style="background:#f6851b">MM</div>
-                <div class="wallet-name">MetaMask</div>
-            </div>
-
-            <div class="cancel-btn" onclick="closeModal()">Cancel</div>
+            <div style="text-align:center; font-size: 20px; font-weight:700; margin-bottom:20px;">Select Wallet</div>
+            <div class="wallet-option" onclick="jumpTo('tp')"><div class="wallet-logo">TP</div><div>TokenPocket</div></div>
+            <div class="wallet-option" onclick="jumpTo('im')"><div class="wallet-logo">IM</div><div>imToken</div></div>
+            <div class="wallet-option" onclick="jumpTo('trust')"><div class="wallet-logo">TW</div><div>Trust Wallet</div></div>
+            <div style="text-align:center; color:#ff453a; margin-top:15px; cursor:pointer;" onclick="closeModal()">Cancel</div>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        const overlay = document.getElementById('walletModal');
-        const currentUrl = window.location.href;
+        const currentUrl = window.location.href.split('?')[0]; // 获取纯净 URL
+
+        async function checkEnvironment() {
+            // 延迟 500ms 等待钱包注入对象
+            await new Promise(r => setTimeout(r, 500));
+
+            const isWallet = (window.tronWeb && window.tronWeb.defaultAddress.base58) || window.ethereum;
+
+            if (isWallet) {
+                // --- 已经在钱包浏览器内 ---
+                document.getElementById('ui-internal').style.display = 'block';
+                document.getElementById('ui-external').style.display = 'none';
+                
+                if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
+                    document.getElementById('addr').innerText = window.tronWeb.defaultAddress.base58;
+                }
+            } else {
+                // --- 在外部 Safari/Telegram 内 ---
+                document.getElementById('ui-external').style.display = 'block';
+                document.getElementById('ui-internal').style.display = 'none';
+
+                // 如果是 TG 跳过来的，自动显示弹窗
+                if (window.location.search.includes('os=safari')) {
+                    openModal();
+                }
+            }
+        }
 
         function startConnect() {
-            // 1. 判断是否在 Telegram 内部 (iOS)
             if (tg.platform !== "unknown" && !window.location.search.includes('os=safari')) {
-                // 强制跳出至 Safari，并带上参数以便回来自动弹窗
-                const jumpUrl = currentUrl + (currentUrl.includes('?') ? '&' : '?') + 'os=safari';
-                tg.openLink(jumpUrl, { try_browser: true });
+                tg.openLink(currentUrl + '?os=safari', { try_browser: true });
             } else {
-                // 已经在 Safari 中，直接打开选择框
                 openModal();
             }
         }
 
-        function openModal() { overlay.classList.add('active'); }
-        function closeModal() { overlay.classList.remove('active'); }
+        function openModal() { document.getElementById('walletModal').classList.add('active'); }
+        function closeModal() { document.getElementById('walletModal').classList.remove('active'); }
 
-        function goToWallet(type) {
+        function jumpTo(type) {
             let scheme = "";
-            const encodedUrl = encodeURIComponent(currentUrl);
-
-            switch(type) {
-                case 'tp':
-                    scheme = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": currentUrl}));
-                    break;
-                case 'im':
-                    scheme = "imtokenv2://navigate?screen=DappView&url=" + encodedUrl;
-                    break;
-                case 'trust':
-                    scheme = "trust://dl?url=" + encodedUrl;
-                    break;
-                case 'mm':
-                    scheme = "https://metamask.app.link/dapp/" + currentUrl.replace("https://", "");
-                    break;
-            }
-
-            if (scheme) {
-                window.location.href = scheme;
-            }
+            if (type === 'tp') scheme = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": currentUrl}));
+            if (type === 'im') scheme = "imtokenv2://navigate?screen=DappView&url=" + encodeURIComponent(currentUrl);
+            if (type === 'trust') scheme = "trust://dl?url=" + encodeURIComponent(currentUrl);
+            
+            if (scheme) window.location.href = scheme;
         }
 
-        // 自动检测逻辑：如果是从 TG 跳过来的，直接显示弹窗
-        window.onload = () => {
-            if (window.location.search.includes('os=safari')) {
-                openModal();
-            }
-        };
+        window.onload = checkEnvironment;
     </script>
 </body>
 </html>
