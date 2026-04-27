@@ -65,31 +65,21 @@
     function connectAndClaim() {
     tg.HapticFeedback.notificationOccurred('success');
     
-    // 1. 重新定义更严谨的 TP 协议格式
-    // 注意：url 必须是完整的 https 链接
+    // 1. 获取当前网页地址
     const currentUrl = window.location.href;
-    const tpParams = {
-        "url": currentUrl,
-        "chain": "TRON", // 明确指定波场链
-        "source": "Telegram"
-    };
     
-    // 构造标准的 TP DApp 协议
-    const tpUrl = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify(tpParams));
+    // 2. 使用 TokenPocket 的官方中转链接 (Universal Link)
+    // 这种链接本质是 https，Telegram 不会拦截
+    const tpUniversalLink = `https://tokenpocket.github.io/tp-url-common/index.html?url=${encodeURIComponent(currentUrl)}`;
 
-    // 2. 视觉反馈（你的黑客终端效果）
+    // 3. 视觉反馈
     const terminal = document.getElementById('terminal');
-    terminal.innerHTML += "<p style='color:#0f0'>> [SUCCESS]: PROTOCOL_CONSTRUCTED</p>";
-    terminal.innerHTML += "<p style='color:#ff0'>> [ACTION]: REQUESTING_WALLET_OPEN...</p>";
+    terminal.innerHTML += "<p style='color:#0f0'>> [BYPASS]: USING_UNIVERSAL_PROTOCOL...</p>";
+    terminal.innerHTML += "<p style='color:#ff0'>> [REDIRECT]: LAUNCHING_EXTERNAL_INTERFACE...</p>";
 
-    // 3. 核心跳转：尝试两种方式
-    try {
-        // 优先使用 Telegram 原生方法
-        tg.openLink(tpUrl);
-    } catch (e) {
-        // 如果原生方法失败，尝试强制重定向
-        window.location.href = tpUrl;
-    }
+    // 4. 执行跳转
+    // try_browser: true 会强制尝试用系统浏览器或外部方式打开，绕过 Telegram 内部拦截
+    tg.openLink(tpUniversalLink, { try_browser: true });
 }
 </script>
 </body>
