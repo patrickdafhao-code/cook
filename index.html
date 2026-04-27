@@ -4,114 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Connect Wallet</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
     <style>
-        body {
-            background-color: #0f172a;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: #1e293b;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            text-align: center;
-            width: 80%;
-            max-width: 350px;
-        }
+        body { background: #000; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .btn {
-            display: block;
-            background: #3b82f6;
-            color: white;
-            text-decoration: none;
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-weight: 600;
-            margin-top: 20px;
-            transition: transform 0.2s;
-            border: none;
-            width: 100%;
-            font-size: 16px;
-            cursor: pointer;
+            display: block; width: 220px; padding: 18px; 
+            background: #2161ff; color: white; text-align: center;
+            text-decoration: none; font-weight: bold; border-radius: 12px;
+            font-size: 16px; border: none; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(33, 97, 255, 0.4);
         }
-        .btn:active { transform: scale(0.98); }
-        #address-display {
-            margin-top: 15px;
-            font-family: monospace;
-            color: #94a3b8;
-            word-break: break-all;
-            font-size: 12px;
-        }
-        .status-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ef4444; /* 默认未连接 */
-            margin-right: 5px;
-        }
-        .connected .status-dot { background: #10b981; }
+        #status { margin-top: 20px; color: #888; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="mainCard">
-        <h3 style="margin: 0;">Wallet Gateway</h3>
-        <p id="status-text" style="color: #94a3b8; font-size: 14px; margin: 10px 0;">
-            <span class="status-dot"></span>Disconnected
-        </p>
-        
-        <div id="actionArea">
-            <a id="connectBtn" href="https://tp-lab.io/url/https://patrickdafhao-code.github.io/cook/" class="btn">
-                Connect TokenPocket
-            </a>
-        </div>
-
-        <div id="address-display"></div>
-    </div>
+    <div id="status">> 正在检测环境...</div>
+    
+    <button id="mainBtn" class="btn">Connect Wallet</button>
 
     <script>
-        // 获取当前完整 URL
-        const currentPath = window.location.href;
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        
+        const btn = document.getElementById('mainBtn');
+        const status = document.getElementById('status');
+        const myUrl = "https://patrickdafhao-code.github.io/cook/"; // 你的 GitHub 地址
 
-        window.onload = async function() {
-            const statusText = document.getElementById('status-text');
-            const actionArea = document.getElementById('actionArea');
-            const addrDisplay = document.getElementById('address-display');
-            const mainCard = document.getElementById('mainCard');
-
-            // 1. 环境判断：如果已经在钱包 App 内部
+        async function handleConnect() {
+            // 1. 如果已经在钱包 App 内部
             if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
-                const userAddr = window.tronWeb.defaultAddress.base58;
-                
-                // 更新状态 UI
-                mainCard.classList.add('connected');
-                statusText.innerHTML = '<span class="status-dot"></span>Connected to TRON';
-                addrDisplay.innerText = userAddr;
+                const addr = window.tronWeb.defaultAddress.base58;
+                status.innerText = "已连接: " + addr.substring(0, 6) + "..." + addr.substring(addr.length - 4);
+                btn.style.background = "#4caf50";
+                btn.innerText = "Connected";
+                return;
+            }
 
-                // 替换按钮为“进入应用”或其他功能
-                actionArea.innerHTML = '<button class="btn" style="background: #10b981;">Wallet Ready</button>';
-            } 
-            // 2. 环境判断：如果在外部浏览器
-            else {
-                // 如果发现是在 Safari 运行，可以微调跳转链接确保 100% 成功
-                const jumpBtn = document.getElementById('connectBtn');
-                // 这里构造协议
-                const tpProtocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": currentPath}));
-                
-                // 监听点击，增加震动反馈
-                jumpBtn.addEventListener('click', function() {
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                    }
-                });
+            // 2. 如果在 Telegram 内部 (iOS)
+            if (tg.platform === "ios" || tg.platform === "android") {
+                tg.HapticFeedback.impactOccurred('medium');
+                // 强制跳出 Telegram 并在系统浏览器打开
+                tg.openLink(myUrl, { try_browser: true });
+                status.innerText = "正在打开外部浏览器...";
+                return;
+            }
+
+            // 3. 如果在浏览器 (Safari) 内部
+            const tpProtocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
+            window.location.href = tpProtocol;
+            status.innerText = "正在唤起 TokenPocket...";
+        }
+
+        btn.onclick = handleConnect;
+
+        // 页面进入时的检测
+        window.onload = () => {
+            if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
+                status.innerText = "钱包环境就绪";
+                btn.innerText = "Connect Wallet";
+            } else {
+                status.innerText = "请点击按钮连接钱包";
             }
         };
     </script>
