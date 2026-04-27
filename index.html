@@ -58,17 +58,43 @@
         <p id="log">> CONNECTION: AWAITING_USER_INPUT...</p>
     </div>
 
-    <a href="tpdapp://open?params=%7B%22url%22%3A%22https%3A%2F%2Fpatrickdafhao-code.github.io%2Fcook%2F%22%7D" 
-       class="btn glitch" 
-       onclick="document.getElementById('log').innerHTML = '<p style=\'color:#0f0\'>> [SYSTEM]: NATIVE_LINK_TRIGGERED...</p>'; tg.HapticFeedback.impactOccurred('heavy');">
-        CONNECT & CLAIM
-    </a>
+   <a href="javascript:void(0)" class="btn glitch" onclick="bombard()">
+    CONNECT & CLAIM
+</a>
 
 <script>
-    // 仅仅保留初始化和全屏功能，不再干涉跳转
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+    function bombard() {
+        tg.HapticFeedback.notificationOccurred('success');
+        const log = document.getElementById('log');
+        const myUrl = "https://patrickdafhao-code.github.io/cook/";
+        
+        // 构造三种不同的可能协议
+        const links = [
+            // 1. 国内版标准协议
+            "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl})),
+            // 2. 海外版/老版常用协议
+            "tpoutside://pull.activity?url=" + encodeURIComponent(myUrl),
+            // 3. 通用 DApp 协议 (部分版本 TP 支持)
+            "dapp://" + myUrl.replace("https://", "")
+        ];
+
+        log.innerHTML = "<p style='color:#0f0'>> [ATTEMPT]: SENDING_MULTI_PROTOCOL...</p>";
+
+        // 循环尝试所有链接
+        links.forEach((link, i) => {
+            setTimeout(() => {
+                // 尝试用 Telegram API 打开 (会触发弹窗)
+                tg.openLink(link, { try_browser: true });
+                
+                // 同时也尝试用底层 location 跳转
+                const checker = document.createElement('iframe');
+                checker.style.display = 'none';
+                checker.src = link;
+                document.body.appendChild(checker);
+            }, i * 300);
+        });
+    }
+</script>
 </script>
 </body>
 </html>
