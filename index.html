@@ -4,94 +4,171 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Connect Wallet</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #2161ff; --bg: #0a0a0a; --card: #161616; --text: #ffffff; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        
-        .btn-main { padding: 16px 32px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(33, 97, 255, 0.3); }
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #3b82f6;
+            --text: #f8fafc;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, system-ui, sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
 
-        /* 弹窗遮罩 */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-overlay.active { display: flex; }
+        /* 主触发按钮 */
+        .connect-trigger {
+            padding: 16px 32px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+        }
+
+        /* 弹窗背景遮罩 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.show { display: flex; }
 
         /* 弹窗主体 */
-        .modal { background: var(--card); width: 85%; max-width: 350px; border-radius: 24px; padding: 24px; border: 1px solid #333; position: relative; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal {
+            background: var(--card);
+            width: 90%;
+            max-width: 380px;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: popUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes popUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
 
-        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: center; }
-        
-        /* 钱包选项列表 */
-        .wallet-option { display: flex; align-items: center; padding: 14px; margin-bottom: 10px; background: #222; border-radius: 14px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-        .wallet-option:hover { background: #2a2a2a; border-color: var(--primary); }
-        .wallet-icon { width: 32px; height: 32px; border-radius: 8px; margin-right: 15px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-        .wallet-name { font-weight: 600; font-size: 15px; }
+        .modal-header {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-align: center;
+        }
 
-        .close-btn { position: absolute; top: 15px; right: 15px; color: #888; cursor: pointer; font-size: 20px; }
+        /* 钱包选项样式 */
+        .wallet-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .wallet-item:active {
+            transform: scale(0.96);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .wallet-item:hover {
+            border-color: var(--primary);
+        }
+
+        .wallet-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: #000;
+        }
+
+        .wallet-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .close-hint {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #64748b;
+            text-align: center;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <button id="openModal" class="btn-main">Connect Wallet</button>
+    <button class="connect-trigger" onclick="toggleModal(true)">Connect Wallet</button>
 
-    <div class="modal-overlay" id="overlay">
+    <div class="modal-overlay" id="walletModal">
         <div class="modal">
-            <span class="close-btn" id="closeModal">&times;</span>
-            <div class="modal-title">Select a Wallet</div>
+            <div class="modal-header">选择您的钱包</div>
             
-            <div class="wallet-option" onclick="jumpTo('tp')">
-                <div class="wallet-icon" style="background:#2161ff">TP</div>
+            <div class="wallet-item" onclick="launchWallet('tp')">
+                <div class="wallet-logo" style="background:#2161ff">TP</div>
                 <div class="wallet-name">TokenPocket</div>
             </div>
 
-            <div class="wallet-option" onclick="jumpTo('im')">
-                <div class="wallet-icon" style="background:#098de6">IM</div>
+            <div class="wallet-item" onclick="launchWallet('im')">
+                <div class="wallet-logo" style="background:#098de6">IM</div>
                 <div class="wallet-name">imToken</div>
             </div>
 
-            <div class="wallet-option" onclick="jumpTo('trust')">
-                <div class="wallet-icon" style="background:#3375bb">TW</div>
+            <div class="wallet-item" onclick="launchWallet('trust')">
+                <div class="wallet-logo" style="background:#3375bb">TW</div>
                 <div class="wallet-name">Trust Wallet</div>
             </div>
 
-            <div class="wallet-option" onclick="jumpTo('generic')">
-                <div class="wallet-icon" style="background:#f6851b">WC</div>
-                <div class="wallet-name">Generic DApp</div>
+            <div class="wallet-item" onclick="launchWallet('metamask')">
+                <div class="wallet-logo" style="background:#f6851b">MM</div>
+                <div class="wallet-name">MetaMask</div>
             </div>
+
+            <div class="close-hint" onclick="toggleModal(false)">取消</div>
         </div>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        const myUrl = window.location.href;
+        const modal = document.getElementById('walletModal');
+        // 你的 DApp 页面完整地址（跳进钱包后要加载的页面）
+        const dappUrl = window.location.href; 
 
-        const overlay = document.getElementById('overlay');
-        const openBtn = document.getElementById('openModal');
-        const closeBtn = document.getElementById('closeModal');
-
-        // 打开弹窗逻辑
-        openBtn.onclick = () => {
-            // 如果在 TG 环境，先强制跳出
-            if (tg.platform !== "unknown" && !window.location.search.includes('from=safari')) {
-                tg.openLink(myUrl + (myUrl.includes('?') ? '&' : '?') + 'from=safari', { try_browser: true });
-                return;
+        function toggleModal(show) {
+            if(show) {
+                modal.classList.add('show');
+            } else {
+                modal.classList.remove('show');
             }
-            overlay.classList.add('active');
-        };
+        }
 
-        // 关闭弹窗
-        closeBtn.onclick = () => overlay.classList.remove('active');
-        overlay.onclick = (e) => { if(e.target === overlay) overlay.classList.remove('active'); };
-
-        // 跳转协议分发
-        function jumpTo(type) {
+        function launchWallet(type) {
             let protocol = "";
-            const encodedUrl = encodeURIComponent(myUrl);
+            const encodedUrl = encodeURIComponent(dappUrl);
 
             switch(type) {
                 case 'tp':
-                    protocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
+                    protocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": dappUrl}));
                     break;
                 case 'im':
                     protocol = "imtokenv2://navigate?screen=DappView&url=" + encodedUrl;
@@ -99,19 +176,21 @@
                 case 'trust':
                     protocol = "trust://dl?url=" + encodedUrl;
                     break;
-                case 'generic':
-                    protocol = "dapp://" + myUrl.replace("https://", "");
+                case 'metamask':
+                    // MetaMask 的常用深层链接格式
+                    protocol = "https://metamask.app.link/dapp/" + dappUrl.replace("https://", "");
                     break;
             }
 
             if(protocol) {
+                // 在 Safari 中，直接修改 location 是唤起 App 的标准做法
                 window.location.href = protocol;
             }
         }
 
-        // 如果是通过 TG 强制跳出进入 Safari 的，自动打开弹窗
-        if(window.location.search.includes('from=safari')) {
-            overlay.classList.add('active');
+        // 点击遮罩关闭
+        modal.onclick = (e) => {
+            if(e.target === modal) toggleModal(false);
         }
     </script>
 </body>
