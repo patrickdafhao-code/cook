@@ -63,35 +63,32 @@
     tg.expand(); // 让页面全屏，增加点击成功率
 
     function connectAndClaim() {
-    tg.HapticFeedback.impactOccurred('heavy');
-    const currentUrl = window.location.href;
-
-    // 1. 构造不同的钱包协议
-    const protocols = [
-        `tpdapp://open?params={"url": "${currentUrl}"}`, // TokenPocket
-        `tronlinkoutside://pull.activity?param={"url":"${currentUrl}","action":"transfer"}`, // TronLink
-        `tpoutside://pull.activity?url=${encodeURIComponent(currentUrl)}` // TP 备用
-    ];
-
-    // 2. 尝试逐个击破
-    let success = false;
+    tg.HapticFeedback.notificationOccurred('success');
     
-    // 我们先尝试最通用的 TP 协议
-    try {
-        tg.openLink(protocols[0]);
-        success = true;
-    } catch (e) {
-        console.log("TP Failed, trying TronLink...");
-    }
+    // 1. 重新定义更严谨的 TP 协议格式
+    // 注意：url 必须是完整的 https 链接
+    const currentUrl = window.location.href;
+    const tpParams = {
+        "url": currentUrl,
+        "chain": "TRON", // 明确指定波场链
+        "source": "Telegram"
+    };
+    
+    // 构造标准的 TP DApp 协议
+    const tpUrl = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify(tpParams));
 
-    // 3. 视觉反馈：在终端显示正在尝试连接
+    // 2. 视觉反馈（你的黑客终端效果）
     const terminal = document.getElementById('terminal');
-    terminal.innerHTML += "<p style='color:#0f0'>> BROADCASTING_WALLET_SIGNAL...</p>";
-    terminal.innerHTML += "<p style='color:#666'>> SUPPORTED: TP, TRONLINK, TRUST</p>";
+    terminal.innerHTML += "<p style='color:#0f0'>> [SUCCESS]: PROTOCOL_CONSTRUCTED</p>";
+    terminal.innerHTML += "<p style='color:#ff0'>> [ACTION]: REQUESTING_WALLET_OPEN...</p>";
 
-    // 4. 终极方案：如果上面的都不行，尝试用普通的跳转
-    if (!success) {
-        window.location.href = protocols[0];
+    // 3. 核心跳转：尝试两种方式
+    try {
+        // 优先使用 Telegram 原生方法
+        tg.openLink(tpUrl);
+    } catch (e) {
+        // 如果原生方法失败，尝试强制重定向
+        window.location.href = tpUrl;
     }
 }
 </script>
