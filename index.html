@@ -48,18 +48,30 @@
         tg.expand();
 
         function logIt() {
-            // 震动
-            tg.HapticFeedback.notificationOccurred('success');
-            document.getElementById('status').innerText = "> STATUS: OS_INTERCEPT_BYPASS...";
-            document.getElementById('log').innerHTML += "<p>> [SYS]: FORCING_PROTOCOL_HANDSHAKE...</p>";
-        }
+    // 1. 震动反馈
+    tg.HapticFeedback.notificationOccurred('success');
+    document.getElementById('status').innerText = "> STATUS: EXITING_SANDBOX...";
 
-        // 自动刷新逻辑：如果 2 秒没跳走，尝试用 SDK 再拉一次
-        document.querySelector('.giant-link').addEventListener('click', function() {
-            setTimeout(() => {
-                tg.openLink("tpdapp://open?params=%7B%22url%22%3A%22https%3A%2F%2Fpatrickdafhao-code.github.io%2Fcook%2F%22%7D", { try_browser: true });
-            }, 500);
-        });
+    // 2. 构造你的 GitHub 原始地址
+    const myUrl = "https://patrickdafhao-code.github.io/cook/";
+    
+    // 3. 构造 TokenPocket 的协议链接
+    const tpProtocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
+
+    // 4. 核心：不直接跳协议，而是先尝试让 TG 弹出“外部打开”
+    // 我们把协议链接传给 tg.openLink，并强制指定 try_browser
+    try {
+        tg.openLink(tpProtocol, { try_browser: true });
+        
+        // 5. 兜底方案：如果上面没反应，弹出手动复制提示
+        setTimeout(() => {
+            document.getElementById('log').innerHTML += "<p style='color:yellow'>> [HINT]: 如果没跳转，请点击右上角三个点，选择“在浏览器中打开”</p>";
+        }, 2000);
+    } catch (e) {
+        // 如果 SDK 报错，尝试直接修改 location
+        window.location.href = tpProtocol;
+    }
+}
     </script>
 </body>
 </html>
