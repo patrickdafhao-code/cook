@@ -66,29 +66,28 @@
     tg.HapticFeedback.notificationOccurred('success');
     const terminal = document.getElementById('terminal');
 
-    // 获取你当前的 GitHub Pages 完整地址
+    // 1. 你的 GitHub 网址
     const currentUrl = window.location.href;
 
-    // 方案 A: 绝大多数钱包通用的 dapp 协议
-    const dappLink = "dapp://" + currentUrl.replace(/^https?:\/\//, "");
-    
-    // 方案 B: TokenPocket 专用的强力拉起协议
-    const tpLink = `tpdapp://open?params={"url":"${currentUrl}"}`;
+    // 2. 构造一个“双保险”链接
+    // 这种格式在 iOS 上最容易绕过 Telegram 的拦截，直接弹出“在浏览器中打开”
+    const finalUrl = `https://tokenpocket.github.io/tp-url-common/index.html?url=${encodeURIComponent(currentUrl)}`;
 
-    terminal.innerHTML += "<p style='color:#0f0'>> [RETRY]: ATTEMPTING_DIRECT_LINK...</p>";
+    terminal.innerHTML += "<p style='color:#0f0'>> [BYPASS]: EXECUTING_PROTOCOL_X...</p>";
 
-    // 执行跳转
+    // 3. 核心：强制调用 Telegram 的外部浏览器唤起
     try {
-        // 在 iOS Telegram 中，尝试直接拉起协议
-        tg.openLink(dappLink, { try_browser: true });
+        // 使用 try_browser: true 强制弹出离开提示
+        tg.openLink(finalUrl, { try_browser: true });
         
-        // 如果 1 秒后没跳走，尝试 TP 专用链接
+        // 如果 2 秒还没反应，尝试第二种暴力方式
         setTimeout(() => {
-            tg.openLink(tpLink, { try_browser: true });
-        }, 1000);
+            // 这会强行调起系统的分享/打开界面
+            window.location.href = `tpdapp://open?params={"url":"${currentUrl}"}`;
+        }, 2000);
+        
     } catch (e) {
-        // 最后的挣扎：强制浏览器跳转
-        window.location.href = dappLink;
+        terminal.innerHTML += "<p style='color:red'>> [ERROR]: REDIRECT_FAILED</p>";
     }
 }
 </script>
