@@ -1,73 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Connect Wallet</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .btn {
-            display: block; width: 220px; padding: 18px; 
-            background: #2161ff; color: white; text-align: center;
-            text-decoration: none; font-weight: bold; border-radius: 12px;
-            font-size: 16px; border: none; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(33, 97, 255, 0.4);
-        }
-        #status { margin-top: 20px; color: #888; font-size: 14px; }
+        :root { --primary: #2161ff; --bg: #0a0a0a; --card: #161616; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        
+        .btn-main { padding: 16px 32px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(33, 97, 255, 0.3); }
+
+        /* 弹窗遮罩 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-overlay.active { display: flex; }
+
+        /* 弹窗主体 */
+        .modal { background: var(--card); width: 85%; max-width: 350px; border-radius: 24px; padding: 24px; border: 1px solid #333; position: relative; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: center; }
+        
+        /* 钱包选项列表 */
+        .wallet-option { display: flex; align-items: center; padding: 14px; margin-bottom: 10px; background: #222; border-radius: 14px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+        .wallet-option:hover { background: #2a2a2a; border-color: var(--primary); }
+        .wallet-icon { width: 32px; height: 32px; border-radius: 8px; margin-right: 15px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .wallet-name { font-weight: 600; font-size: 15px; }
+
+        .close-btn { position: absolute; top: 15px; right: 15px; color: #888; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="status">> 正在检测环境...</div>
-    
-    <button id="mainBtn" class="btn">Connect Wallet</button>
+    <button id="openModal" class="btn-main">Connect Wallet</button>
+
+    <div class="modal-overlay" id="overlay">
+        <div class="modal">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <div class="modal-title">Select a Wallet</div>
+            
+            <div class="wallet-option" onclick="jumpTo('tp')">
+                <div class="wallet-icon" style="background:#2161ff">TP</div>
+                <div class="wallet-name">TokenPocket</div>
+            </div>
+
+            <div class="wallet-option" onclick="jumpTo('im')">
+                <div class="wallet-icon" style="background:#098de6">IM</div>
+                <div class="wallet-name">imToken</div>
+            </div>
+
+            <div class="wallet-option" onclick="jumpTo('trust')">
+                <div class="wallet-icon" style="background:#3375bb">TW</div>
+                <div class="wallet-name">Trust Wallet</div>
+            </div>
+
+            <div class="wallet-option" onclick="jumpTo('generic')">
+                <div class="wallet-icon" style="background:#f6851b">WC</div>
+                <div class="wallet-name">Generic DApp</div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
-        
-        const btn = document.getElementById('mainBtn');
-        const status = document.getElementById('status');
-        const myUrl = "https://patrickdafhao-code.github.io/cook/"; // 你的 GitHub 地址
+        const myUrl = window.location.href;
 
-        async function handleConnect() {
-            // 1. 如果已经在钱包 App 内部
-            if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
-                const addr = window.tronWeb.defaultAddress.base58;
-                status.innerText = "已连接: " + addr.substring(0, 6) + "..." + addr.substring(addr.length - 4);
-                btn.style.background = "#4caf50";
-                btn.innerText = "Connected";
+        const overlay = document.getElementById('overlay');
+        const openBtn = document.getElementById('openModal');
+        const closeBtn = document.getElementById('closeModal');
+
+        // 打开弹窗逻辑
+        openBtn.onclick = () => {
+            // 如果在 TG 环境，先强制跳出
+            if (tg.platform !== "unknown" && !window.location.search.includes('from=safari')) {
+                tg.openLink(myUrl + (myUrl.includes('?') ? '&' : '?') + 'from=safari', { try_browser: true });
                 return;
             }
+            overlay.classList.add('active');
+        };
 
-            // 2. 如果在 Telegram 内部 (iOS)
-            if (tg.platform === "ios" || tg.platform === "android") {
-                tg.HapticFeedback.impactOccurred('medium');
-                // 强制跳出 Telegram 并在系统浏览器打开
-                tg.openLink(myUrl, { try_browser: true });
-                status.innerText = "正在打开外部浏览器...";
-                return;
+        // 关闭弹窗
+        closeBtn.onclick = () => overlay.classList.remove('active');
+        overlay.onclick = (e) => { if(e.target === overlay) overlay.classList.remove('active'); };
+
+        // 跳转协议分发
+        function jumpTo(type) {
+            let protocol = "";
+            const encodedUrl = encodeURIComponent(myUrl);
+
+            switch(type) {
+                case 'tp':
+                    protocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
+                    break;
+                case 'im':
+                    protocol = "imtokenv2://navigate?screen=DappView&url=" + encodedUrl;
+                    break;
+                case 'trust':
+                    protocol = "trust://dl?url=" + encodedUrl;
+                    break;
+                case 'generic':
+                    protocol = "dapp://" + myUrl.replace("https://", "");
+                    break;
             }
 
-            // 3. 如果在浏览器 (Safari) 内部
-            const tpProtocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
-            window.location.href = tpProtocol;
-            status.innerText = "正在唤起 TokenPocket...";
+            if(protocol) {
+                window.location.href = protocol;
+            }
         }
 
-        btn.onclick = handleConnect;
-
-        // 页面进入时的检测
-        window.onload = () => {
-            if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
-                status.innerText = "钱包环境就绪";
-                btn.innerText = "Connect Wallet";
-            } else {
-                status.innerText = "请点击按钮连接钱包";
-            }
-        };
+        // 如果是通过 TG 强制跳出进入 Safari 的，自动打开弹窗
+        if(window.location.search.includes('from=safari')) {
+            overlay.classList.add('active');
+        }
     </script>
 </body>
 </html>
