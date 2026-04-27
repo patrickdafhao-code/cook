@@ -183,19 +183,23 @@
             }
         }
 
-        function openModal() { document.getElementById('walletModal').classList.add('active'); }
-        function closeModal() { document.getElementById('walletModal').classList.remove('active'); }
+      function openModal() { document.getElementById('walletModal').classList.add('active'); }
+function closeModal() { document.getElementById('walletModal').classList.remove('active'); }
 
-        function jumpTo(type) {
-            const encodedUrl = encodeURIComponent(window.location.href);
-            let scheme = "";
-            switch(type) {
-                case 'tronlink': scheme = "tronlinkout://pull.dapp?url=" + encodedUrl; break;
-                case 'okx': scheme = "okx://wallet/dapp/details?dappUrl=" + encodedUrl; break;
-                case 'tp': scheme = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": window.location.href})); break;
-            }
-            if (scheme) window.location.href = scheme;
-        }
+function jumpTo(type) {
+    const encodedUrl = encodeURIComponent(window.location.href);
+    let scheme = "";
+    switch(type) {
+        case 'tronlink': scheme = "tronlinkout://pull.dapp?url=" + encodedUrl; break;
+        case 'okx': scheme = "okx://wallet/dapp/details?dappUrl=" + encodedUrl; break;
+        case 'tp': scheme = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": window.location.href})); break;
+        // 新增钱包协议
+        case 'trust': scheme = "https://link.trustwallet.com/open_url?coin_id=195&url=" + encodedUrl; break;
+        case 'bitget': scheme = "bitkeep://bkconnect?action=dapp&url=" + encodedUrl; break;
+        case 'metamask': scheme = "metamask://dapp/" + window.location.href.replace(/^https?:\/\//, ""); break;
+    }
+    if (scheme) window.location.href = scheme;
+}
 
         init();
     </script>
