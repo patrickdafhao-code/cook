@@ -56,21 +56,27 @@
     </div>
     <button class="btn glitch" onclick="connectAndClaim()">Connect & Claim</button>
 
-    <script>
-        // 初始化 Telegram WebApp
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // 全屏打开
+<script>
+    // 1. 初始化 Telegram 环境
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand(); // 让页面全屏，增加点击成功率
 
-        async function connectAndClaim() {
-            // 1. 这里是跳转钱包的逻辑（iOS 会拉起 TronLink）
-            const tronLinkUrl = "tronlinkoutside://pull.activity?param={}";
-            tg.openLink(tronLinkUrl);
-            
-            // 2. 触感反馈（震动一下，很硬核）
-            tg.HapticFeedback.notificationOccurred('success');
-            
-            console.log("Redirecting to wallet...");
-        }
-    </script>
+    function connectAndClaim() {
+        // 2. 震动反馈：如果手机震动了，说明你的点击被程序识别了
+        tg.HapticFeedback.impactOccurred('medium');
+
+        // 3. 定义跳转目标
+        // 如果安装了 TronLink，这个协议可以直接拉起它
+        const tronLinkUrl = "tronlinkoutside://";
+
+        // 4. 执行跳转（这是 iOS Telegram 的标准写法）
+        tg.openLink(tronLinkUrl);
+
+        // 5. 视觉辅助（如果没跳走，你会看到这一行字）
+        const terminal = document.getElementById('terminal');
+        terminal.innerHTML += "<p style='color:yellow'>> EXECUTING_JUMP_SEQUENCE...</p>";
+    }
+</script>
 </body>
 </html>
