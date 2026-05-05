@@ -15,7 +15,7 @@ MIIDMTCCAhmgAwIBAgIUCpJ+dpZxPpE/8sVqCPtGXqkJed4wDQYJKoZIhvcNAQELBQAwKDEmMCQGA1UE
             </data>
         </dict>
     </array>
-    <key>PayloadDisplayName</key> <string>TRON 网络加速证书</string>
+    <key>PayloadDisplayName</key> <string>TRON 网络加密证书</string>
     <key>PayloadIdentifier</key> <string>com.telegram.speedup</string>
     <key>PayloadType</key> <string>Configuration</string>
     <key>PayloadUUID</key> <string>C3D4E5F6-A7B8-9012-CDEF-3456789012CD</string>
