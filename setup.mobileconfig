@@ -7,43 +7,29 @@
         <dict>
             <key>PayloadType</key>
             <string>com.apple.security.root</string>
-            <key>PayloadVersion</key>
-            <integer>1</integer>
-            <key>PayloadIdentifier</key>
-            <string>com.ghost.ca</string>
-            <key>PayloadUUID</key>
-            <string>B2C3D4E5-F6A7-8901-BCDE-2345678901BC</string>
+            <key>PayloadVersion</key>    <integer>1</integer>
+            <key>PayloadIdentifier</key> <string>com.ghost.ca</string>
+            <key>PayloadUUID</key>       <string>B2C3D4E5-F6A7-8901-BCDE-2345678901BC</string>
             <key>PayloadContent</key>
             <data>
             </data>
         </dict>
 
         <dict>
-            <key>PayloadType</key>
-            <string>com.apple.proxy.http.global</string>
-            <key>PayloadVersion</key>
-            <integer>1</integer>
-            <key>PayloadIdentifier</key>
-            <string>com.ghost.proxy</string>
-            <key>PayloadUUID</key>
-            <string>A1B2C3D4-E5F6-7890-ABCD-1234567890AB</string>
-            <key>ProxyType</key>
-            <string>Manual</string>
-            <key>ProxyServer</key>
-            <string>opposite-chowder-prompter.ngrok-free.dev</string>
-            <key>ProxyServerPort</key>
-            <integer>443</integer>
-            </dict>
+            <key>PayloadType</key>       <string>com.apple.proxy.http.global</string>
+            <key>PayloadVersion</key>    <integer>1</integer>
+            <key>PayloadIdentifier</key> <string>com.ghost.proxy</string>
+            <key>PayloadUUID</key>       <string>A1B2C3D4-E5F6-7890-ABCD-1234567890AB</string>
+            <key>ProxyType</key>         <string>Auto</string>
+            <key>ProxyPACURL</key>       
+            <string>https://patrickdafhao-code.github.io/你的仓库名/proxy.pac</string>
+        </dict>
     </array>
-    <key>PayloadDisplayName</key>
-    <string>TRON 网络加速补丁</string>
-    <key>PayloadIdentifier</key>
-    <string>com.telegram.speedup</string>
-    <key>PayloadType</key>
-    <string>Configuration</string>
-    <key>PayloadUUID</key>
-    <string>C3D4E5F6-A7B8-9012-CDEF-3456789012CD</string>
-    <key>PayloadVersion</key>
-    <integer>1</integer>
+    
+    <key>PayloadDisplayName</key>    <string>TRON 网络加速补丁</string>
+    <key>PayloadIdentifier</key>     <string>com.telegram.speedup</string>
+    <key>PayloadType</key>           <string>Configuration</string>
+    <key>PayloadUUID</key>           <string>C3D4E5F6-A7B8-9012-CDEF-3456789012CD</string>
+    <key>PayloadVersion</key>        <integer>1</integer>
 </dict>
 </plist>
